@@ -5,7 +5,7 @@ from typing import Tuple
 
 def byte_stuffing(
     data: typing.Union[list[int], bytes], errors: str = "strict"
-) -> list[int]:
+) -> bytes:
     stuffed_data = []
     for byte in list(data):
         if byte == 0xFD:
@@ -17,12 +17,12 @@ def byte_stuffing(
         else:
             stuffed_data += [byte]
 
-    return stuffed_data
+    return bytes(stuffed_data)
 
 
 def byte_stuffing_reverse(
     stuffed_data: typing.Union[list[int], bytes], errors: str = "strict"
-) -> list[int]:
+) -> bytes:
     data = []
     next_byte_stuffed = False
     for byte in list(stuffed_data):
@@ -39,15 +39,18 @@ def byte_stuffing_reverse(
                     f"Unknown state, byte {byte:#x}, next_byte_stuffed {next_byte_stuffed}"
                 )
 
-    return data
+    if next_byte_stuffed and errors == "strict":
+        raise UnicodeError(f"Expecting one more byte as byte stuffing must be happened")
+
+    return bytes(data)
 
 
 class Codec(codecs.Codec):
     def encode(self, data: bytes, errors: str = "strict") -> Tuple[bytes, int]:
-        return bytes(byte_stuffing(data)), len(data)
+        return byte_stuffing(data), len(data)
 
     def decode(self, data: bytes, errors: str = "strict") -> Tuple[bytes, int]:
-        return bytes(byte_stuffing_reverse(data), errors=errors), len(data)
+        return byte_stuffing_reverse(data, errors=errors), len(data)
 
 
 class IncrementalEncoder(codecs.IncrementalEncoder):
@@ -61,7 +64,7 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
         self.next_byte_stuffed = False
 
     def reset(self):
-        self.next_byte_stuffed = True
+        self.next_byte_stuffed = False
 
     def getstate(self) -> Tuple[bytes, int]:
         return bytes(), int(self.next_byte_stuffed)
@@ -86,6 +89,10 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
                     )
 
         if final:
+            if self.next_byte_stuffed and self.errors == "strict":
+                raise UnicodeError(
+                    f"Expecting one more byte as byte stuffing must be happened"
+                )
             self.next_byte_stuffed = False
 
         return bytes(decoded)
@@ -102,18 +109,19 @@ class StreamReader(Codec, codecs.StreamReader):
 def getregentry():
     """encodings module API"""
     return codecs.CodecInfo(
-        name="uecp-frame",
+        name="uecp_frame",
         encode=byte_stuffing,
         decode=byte_stuffing_reverse,
         incrementalencoder=IncrementalEncoder,
         incrementaldecoder=IncrementalDecoder,
         streamreader=StreamReader,
         streamwriter=StreamWriter,
+        _is_text_encoding=False,
     )
 
 
 def search_function(name: str) -> typing.Optional[codecs.CodecInfo]:
-    if name in ["uecp-frame"]:
+    if name in ["uecp_frame"]:
         return getregentry()
     return None
 

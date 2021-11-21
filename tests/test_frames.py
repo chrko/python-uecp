@@ -81,6 +81,10 @@ class TestUECPFrame:
 
 def test_crc():
     def crc_ccitt(data):
+        """\
+        This implementation is copied from https://github.com/mpbraendli/mmbtools-aux/blob/master/uecpparse/crc.py
+        to verify configuration of crc library
+        """
         crc = 0xFFFF
 
         for d in data:

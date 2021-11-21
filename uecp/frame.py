@@ -1,7 +1,7 @@
 from crc import Configuration, CrcCalculator
 
-from uecp import UECPMessage
-from uecp.byte_stuff_codec import byte_stuffing
+from uecp.messages import UECPMessage
+from uecp.byte_stuffing_codec import byte_stuffing
 
 
 class UECPFrame:
@@ -90,6 +90,6 @@ class UECPFrame:
         data.append(crc >> 8)
         data.append(crc & 0xFF)
 
-        data = byte_stuffing(data)
+        data = list(byte_stuffing(data))
 
         return [self.STA] + data + [self.STP]
