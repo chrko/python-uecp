@@ -1,11 +1,10 @@
 import codecs
 import typing
-from typing import Tuple
 
 
-def byte_stuffing(
+def encode(
     data: typing.Union[list[int], bytes], errors: str = "strict"
-) -> bytes:
+) -> tuple[bytes, int]:
     stuffed_data = []
     for byte in list(data):
         if byte == 0xFD:
@@ -17,14 +16,15 @@ def byte_stuffing(
         else:
             stuffed_data += [byte]
 
-    return bytes(stuffed_data)
+    return bytes(stuffed_data), len(data)
 
 
-def byte_stuffing_reverse(
+def decode(
     stuffed_data: typing.Union[list[int], bytes], errors: str = "strict"
-) -> bytes:
+) -> tuple[bytes, int]:
     data = []
     next_byte_stuffed = False
+    decoded_bytes = len(stuffed_data)
     for byte in list(stuffed_data):
         if 0x00 <= byte < 0xFD and not next_byte_stuffed:
             data.append(byte)
@@ -38,24 +38,25 @@ def byte_stuffing_reverse(
                 raise UnicodeError(
                     f"Unknown state, byte {byte:#x}, next_byte_stuffed {next_byte_stuffed}"
                 )
+            decoded_bytes -= 1
 
     if next_byte_stuffed and errors == "strict":
         raise UnicodeError(f"Expecting one more byte as byte stuffing must be happened")
 
-    return bytes(data)
+    return bytes(data), decoded_bytes
 
 
 class Codec(codecs.Codec):
-    def encode(self, data: bytes, errors: str = "strict") -> Tuple[bytes, int]:
-        return byte_stuffing(data), len(data)
+    def encode(self, data: bytes, errors: str = "strict") -> tuple[bytes, int]:
+        return encode(data)
 
-    def decode(self, data: bytes, errors: str = "strict") -> Tuple[bytes, int]:
-        return byte_stuffing_reverse(data, errors=errors), len(data)
+    def decode(self, data: bytes, errors: str = "strict") -> tuple[bytes, int]:
+        return decode(data, errors=errors)
 
 
 class IncrementalEncoder(codecs.IncrementalEncoder):
     def encode(self, data: bytes, final: bool = False) -> bytes:
-        return bytes(byte_stuffing(data))
+        return bytes(encode(data)[0])
 
 
 class IncrementalDecoder(codecs.IncrementalDecoder):
@@ -66,10 +67,10 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
     def reset(self):
         self.next_byte_stuffed = False
 
-    def getstate(self) -> Tuple[bytes, int]:
+    def getstate(self) -> tuple[bytes, int]:
         return bytes(), int(self.next_byte_stuffed)
 
-    def setstate(self, state: Tuple[bytes, int]):
+    def setstate(self, state: tuple[bytes, int]):
         self.next_byte_stuffed = bool(state[1])
 
     def decode(self, data: bytes, final: bool = False) -> bytes:
@@ -110,8 +111,8 @@ def getregentry():
     """encodings module API"""
     return codecs.CodecInfo(
         name="uecp_frame",
-        encode=byte_stuffing,
-        decode=byte_stuffing_reverse,
+        encode=encode,
+        decode=decode,
         incrementalencoder=IncrementalEncoder,
         incrementaldecoder=IncrementalDecoder,
         streamreader=StreamReader,

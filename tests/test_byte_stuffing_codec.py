@@ -2,19 +2,20 @@ import codecs
 
 import pytest
 
-from uecp.byte_stuffing_codec import byte_stuffing, byte_stuffing_reverse
+from uecp.byte_stuffing_codec import encode, decode
 
 
 class TestByteStuffingFunctions:
     def test_simple_input(self):
         data = [0xFF, 0xFD, 0x01, 0x54, 0x44]
-        stuffed = list(byte_stuffing(data))
+        res = encode(data)
 
-        assert stuffed == [0xFD, 0x02, 0xFD, 0x00, 0x01, 0x54, 0x44]
+        assert list(res[0]) == [0xFD, 0x02, 0xFD, 0x00, 0x01, 0x54, 0x44]
+        assert res[1] == 5
 
     def test_round_trip(self):
         data = [0xFF, 0xFD, 0x01, 0x54, 0xFD, 0x44]
-        assert list(byte_stuffing_reverse(byte_stuffing(data))) == data
+        assert list(decode(encode(data)[0])[0]) == data
 
     @pytest.mark.parametrize(
         "stuffed_data",
@@ -22,7 +23,7 @@ class TestByteStuffingFunctions:
     )
     def test_invalid_input(self, stuffed_data):
         with pytest.raises(UnicodeError):
-            byte_stuffing_reverse(stuffed_data)
+            decode(stuffed_data)
 
 
 class TestRegisteredCodec:
@@ -31,12 +32,14 @@ class TestRegisteredCodec:
     def test_encoder(self):
         res = self.codec_info.encode(bytes([0xFF, 0xFD, 0x01, 0x54, 0x44]))
 
-        assert list(res) == [0xFD, 0x02, 0xFD, 0x00, 0x01, 0x54, 0x44]
+        assert list(res[0]) == [0xFD, 0x02, 0xFD, 0x00, 0x01, 0x54, 0x44]
+        assert res[1] == 5
 
     def test_decoder(self):
         res = self.codec_info.decode(bytes([0xFD, 0x02, 0xFD, 0x00, 0x01, 0x54, 0x44]))
 
-        assert list(res) == [0xFF, 0xFD, 0x01, 0x54, 0x44]
+        assert list(res[0]) == [0xFF, 0xFD, 0x01, 0x54, 0x44]
+        assert res[1] == 7
 
     def test_incremental_decoder(self):
         decoder = self.codec_info.incrementaldecoder()
