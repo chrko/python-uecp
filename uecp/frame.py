@@ -66,6 +66,12 @@ class UECPFrame:
             raise ValueError("Sequence counter must be an integer")
         self._sequence_counter = int(new_sequence_counter)
 
+    def add_message(self, msg):
+        self._messages.append(msg)
+
+    def clear_messages(self):
+        self._messages = []
+
     def encode(self) -> list[int]:
         data: list[int] = []
 
