@@ -1,6 +1,6 @@
 import pytest
 
-from uecp.messages import ProgrammeIdentificationMessage, UECPMessage
+from uecp.messages import ProgrammeIdentificationMessage
 
 
 class TestPIMessage:
@@ -24,14 +24,3 @@ class TestPIMessage:
 
         with pytest.raises(ValueError):
             ProgrammeIdentificationMessage.create_from([0xF1, 0x02, 0x03, 0x04, 0x05])
-
-
-class TestDecodingMessages:
-    def test_decoding_single_pi_msg(self):
-        msgs = UECPMessage.decode_messages([0x01, 0x3F, 0xDA, 0xAB, 0xCD])
-        assert len(msgs) == 1
-        msg = msgs[0]
-        assert isinstance(msg, ProgrammeIdentificationMessage)
-        assert msg.pi == 0xABCD
-        assert msg.programme_service_number == 0xDA
-        assert msg.data_set_number == 0x3F

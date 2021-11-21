@@ -9,6 +9,11 @@ class UECPFrame:
     STA = 0xFE
     STP = 0xFF
 
+    ALL_SITES = 0
+    ALL_ENCODERS = 0
+
+    UNUSED_SEQUENCE_COUNTER = 0
+
     CRC_CONFIGURATION = Configuration(
         width=16,
         polynomial=0x1021,
