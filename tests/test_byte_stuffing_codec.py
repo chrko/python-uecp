@@ -2,7 +2,7 @@ import codecs
 
 import pytest
 
-from uecp.byte_stuffing_codec import encode, decode
+from uecp.byte_stuffing_codec import decode, encode
 
 
 class TestByteStuffingFunctions:
