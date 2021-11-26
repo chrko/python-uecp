@@ -1,5 +1,9 @@
 import pytest
 
+from uecp.messages.base import (
+    UECPMessageDecodeElementCodeMismatchError,
+    UECPMessageDecodeNotEnoughData,
+)
 from uecp.messages.rds import (
     ProgrammeIdentificationMessage,
     ProgrammeServiceNameMessage,
@@ -22,10 +26,10 @@ class TestPIMessage:
         assert msg.data_set_number == 0x3F
         assert consumed_bytes == 5
 
-        with pytest.raises(ValueError):
+        with pytest.raises(UECPMessageDecodeNotEnoughData):
             ProgrammeIdentificationMessage.create_from([0x01])
 
-        with pytest.raises(ValueError):
+        with pytest.raises(UECPMessageDecodeElementCodeMismatchError):
             ProgrammeIdentificationMessage.create_from([0xF1, 0x02, 0x03, 0x04, 0x05])
 
 

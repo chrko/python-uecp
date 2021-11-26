@@ -1,4 +1,7 @@
-class InvalidDataSetNumber(ValueError):
+from uecp.messages.base import UECPMessageError
+
+
+class InvalidDataSetNumber(UECPMessageError):
     def __init__(self, data_set_number):
         self.data_set_number = data_set_number
 
@@ -33,7 +36,7 @@ class UECPMessageDataSetNumber:
             if new_data_set_number == int(new_data_set_number):
                 new_data_set_number = int(new_data_set_number)
             else:
-                raise ValueError
+                raise ValueError()
         except ValueError:
             raise InvalidDataSetNumber(new_data_set_number)
 
@@ -42,7 +45,7 @@ class UECPMessageDataSetNumber:
         self.__data_set_number = new_data_set_number
 
 
-class InvalidProgrammeServiceNumber(ValueError):
+class InvalidProgrammeServiceNumber(UECPMessageError):
     def __init__(self, programme_service_number):
         self.programme_service_number = programme_service_number
 
@@ -52,7 +55,7 @@ class InvalidProgrammeServiceNumber(ValueError):
     def __str__(self):
         return (
             f"Supplied an invalid value for programme service number. "
-            f"Must be an integer between 0x00 and 0xFF. Supplied {self.data_set_number!r}"
+            f"Must be an integer between 0x00 and 0xFF. Supplied {self.programme_service_number!r}"
         )
 
 

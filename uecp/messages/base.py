@@ -37,3 +37,19 @@ class UECPMessage(abc.ABC):
             msgs.append(msg)
             data = data[consumed_bytes:]
         return msgs
+
+
+class UECPMessageError(Exception):
+    pass
+
+
+class UECPMessageDecodeError(UECPMessageError):
+    pass
+
+
+class UECPMessageDecodeNotEnoughData(UECPMessageDecodeError):
+    pass
+
+
+class UECPMessageDecodeElementCodeMismatchError(UECPMessageDecodeError):
+    pass
