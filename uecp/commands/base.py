@@ -26,17 +26,17 @@ class UECPCommand(abc.ABC):
         return message_type
 
     @classmethod
-    def decode_messages(cls, data: typing.Union[bytes, list[int]]) -> ["UECPCommand"]:
-        msgs = []
+    def decode_commands(cls, data: typing.Union[bytes, list[int]]) -> ["UECPCommand"]:
+        cmds = []
         data = list(data)
         while len(data) > 0:
             mec = data[0]
             if mec not in cls.ELEMENT_CODE_MAP:
                 raise ValueError()
-            msg, consumed_bytes = cls.ELEMENT_CODE_MAP[mec].create_from(data)
-            msgs.append(msg)
+            cmd, consumed_bytes = cls.ELEMENT_CODE_MAP[mec].create_from(data)
+            cmds.append(cmd)
             data = data[consumed_bytes:]
-        return msgs
+        return cmds
 
 
 class UECPCommandException(Exception):

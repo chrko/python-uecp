@@ -27,7 +27,7 @@ class UECPFrame:
         self._site_address: int = 0
         self._encoder_address: int = 0
         self._sequence_counter: int = 0
-        self._messages: list[UECPCommand] = []
+        self._commands: list[UECPCommand] = []
 
     @property
     def site_address(self) -> int:
@@ -71,11 +71,11 @@ class UECPFrame:
             raise ValueError("Sequence counter must be an integer")
         self._sequence_counter = int(new_sequence_counter)
 
-    def add_message(self, msg):
-        self._messages.append(msg)
+    def add_command(self, msg):
+        self._commands.append(msg)
 
-    def clear_messages(self):
-        self._messages = []
+    def clear_commands(self):
+        self._commands = []
 
     def encode(self) -> list[int]:
         data: list[int] = []
@@ -88,8 +88,8 @@ class UECPFrame:
         data.append(self._sequence_counter)
 
         msg_data: list[int] = []
-        for message in self._messages:
-            msg_data += message.encode()
+        for command in self._commands:
+            msg_data += command.encode()
 
         if not (0 <= len(msg_data) <= 255):
             raise ValueError("Encoded commands must not exceed 255 bytes")

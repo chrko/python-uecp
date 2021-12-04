@@ -79,7 +79,7 @@ class TestUECPFrame:
         res = f.encode()
         assert bytes(res).hex() == "fe0000fd01004bf1ff"
 
-        f.add_message(ProgrammeIdentificationSetCommand(pi=0xFF))
+        f.add_command(ProgrammeIdentificationSetCommand(pi=0xFF))
         res = f.encode()
         assert bytes(res).hex() == "fe0000fd010501000000fd020d3dff"
 

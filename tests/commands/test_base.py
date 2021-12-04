@@ -6,17 +6,17 @@ from uecp.commands.rds_message import (
 
 
 class TestDecodingCommands:
-    def test_decoding_single_pi_msg(self):
-        msgs = UECPCommand.decode_messages([0x01, 0x3F, 0xDA, 0xAB, 0xCD])
-        assert len(msgs) == 1
-        msg = msgs[0]
-        assert isinstance(msg, ProgrammeIdentificationSetCommand)
-        assert msg.pi == 0xABCD
-        assert msg.programme_service_number == 0xDA
-        assert msg.data_set_number == 0x3F
+    def test_decoding_single_pi_cmd(self):
+        cmds = UECPCommand.decode_commands([0x01, 0x3F, 0xDA, 0xAB, 0xCD])
+        assert len(cmds) == 1
+        cmd = cmds[0]
+        assert isinstance(cmd, ProgrammeIdentificationSetCommand)
+        assert cmd.pi == 0xABCD
+        assert cmd.programme_service_number == 0xDA
+        assert cmd.data_set_number == 0x3F
 
     def test_decode_pi_ps(self):
-        msgs = UECPCommand.decode_messages(
+        cmds = UECPCommand.decode_commands(
             [
                 0x01,
                 0x3F,
@@ -36,14 +36,14 @@ class TestDecodingCommands:
                 0x20,
             ]
         )
-        assert len(msgs) == 2
-        msg = msgs[0]
-        assert isinstance(msg, ProgrammeIdentificationSetCommand)
-        assert msg.pi == 0xABCD
-        assert msg.programme_service_number == 0xDA
-        assert msg.data_set_number == 0x3F
-        msg = msgs[1]
-        assert isinstance(msg, ProgrammeServiceNameSetCommand)
-        assert msg.ps == "RADIO 1"
-        assert msg.programme_service_number == 2
-        assert msg.data_set_number == 0
+        assert len(cmds) == 2
+        cmd = cmds[0]
+        assert isinstance(cmd, ProgrammeIdentificationSetCommand)
+        assert cmd.pi == 0xABCD
+        assert cmd.programme_service_number == 0xDA
+        assert cmd.data_set_number == 0x3F
+        cmd = cmds[1]
+        assert isinstance(cmd, ProgrammeServiceNameSetCommand)
+        assert cmd.ps == "RADIO 1"
+        assert cmd.programme_service_number == 2
+        assert cmd.data_set_number == 0
