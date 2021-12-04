@@ -583,11 +583,20 @@ class RadioTextMessage(UECPMessage, UECPMessageDSNnPSN):
         number_of_transmission = (flags & 0b0001_1110) >> 1
         a_b_toggle = flags & 0b0000_0001
 
-        return cls(
-            text=text,
-            buffer_configuration=buffer_configuration,
-            number_of_transmissions=number_of_transmission,
-            a_b_toggle=a_b_toggle,
-            data_set_number=dsn,
-            programme_service_number=psn,
+        return (
+            cls(
+                text=text,
+                buffer_configuration=buffer_configuration,
+                number_of_transmissions=number_of_transmission,
+                a_b_toggle=a_b_toggle,
+                data_set_number=dsn,
+                programme_service_number=psn,
+            ),
+            4 + mel,
         )
+
+
+# TODO AF
+# TODO EON-AF
+# TODO Slow Labeling Codes
+# TODO Linkage information

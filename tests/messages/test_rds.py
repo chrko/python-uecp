@@ -10,6 +10,8 @@ from uecp.messages.rds import (
     ProgrammeServiceNameMessage,
     ProgrammeTypeMessage,
     ProgrammeTypeNameMessage,
+    RadioTextBufferConfiguration,
+    RadioTextMessage,
     TrafficAnnouncementProgrammeMessage,
 )
 
@@ -171,3 +173,43 @@ class TestPTYNMessage:
         assert msg.programme_service_number == 2
         assert msg.data_set_number == 0
         assert msg.programme_type_name == "Football"
+
+
+class TestRadioTextMessage:
+    def test_create_from_1(self):
+        """\
+        <0A><00><01><04><0B><52><44><53>
+        Send to current data set, programme service 1. This message causes the buffer to be
+        flushed, the A/B flag to be toggled and the text >RDS< is transmitted indefinitely.
+        """
+        msg, consumed_bytes = RadioTextMessage.create_from(
+            [0x0A, 0x00, 0x01, 0x04, 0x0B, 0x52, 0x44, 0x53]
+        )  # type: RadioTextMessage, int
+        assert consumed_bytes == 8
+        assert isinstance(msg, RadioTextMessage)
+        assert msg.data_set_number == 0
+        assert msg.programme_service_number == 1
+        assert msg.a_b_toggle is True
+        assert msg.buffer_configuration == RadioTextBufferConfiguration.TRUNCATE_BEFORE
+        assert msg.number_of_transmissions == 5
+        assert msg.text == "RDS"
+
+    def test_create_from_2(self):
+        """\
+        <0A><00><01><05><51><74><65><78><74>
+        Send to current data set, programme service 1. This, message adds another Radiotext
+        message >text< to the buffer to be repeated 8 times. The previous message and this
+        message are cycled. >RDS< is sent five times, then >text< 8 times and so on."""
+
+        msg, consumed_bytes = RadioTextMessage.create_from(
+            [0x0A, 0x00, 0x01, 0x05, 0x51, 0x74, 0x65, 0x78, 0x74]
+        )  # type: RadioTextMessage, int
+
+        assert consumed_bytes == 9
+        assert isinstance(msg, RadioTextMessage)
+        assert msg.data_set_number == 0
+        assert msg.programme_service_number == 1
+        assert msg.a_b_toggle is True
+        assert msg.buffer_configuration == RadioTextBufferConfiguration.APPEND
+        assert msg.number_of_transmissions == 8
+        assert msg.text == "text"
