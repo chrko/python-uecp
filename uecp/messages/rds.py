@@ -327,7 +327,7 @@ class ProgrammeTypeMessage(UECPMessage, UECPMessageDSNnPSN):
 
     def __init__(
         self,
-        programme_type: ProgrammeType = ProgrammeType.UNDEFINED,
+        programme_type: typing.Union[ProgrammeType, int] = ProgrammeType.UNDEFINED,
         data_set_number=0,
         programme_service_number=0,
     ):
@@ -367,10 +367,13 @@ class ProgrammeTypeMessage(UECPMessage, UECPMessageDSNnPSN):
 
         programme_type = ProgrammeType(programme_type)
 
-        return cls(
-            programme_type=programme_type,
-            data_set_number=dsn,
-            programme_service_number=psn,
+        return (
+            cls(
+                programme_type=programme_type,
+                data_set_number=dsn,
+                programme_service_number=psn,
+            ),
+            4,
         )
 
 

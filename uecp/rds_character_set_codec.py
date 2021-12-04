@@ -152,7 +152,7 @@ for (character_code, unicode_number) in encoding_base_table.items():
     encoding_table[unicode_char] = character_code
 
     if character_code in decoding_table:
-        raise Exception
+        raise Exception()
     decoding_table[character_code] = unicode_char
 
 
