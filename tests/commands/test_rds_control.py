@@ -38,7 +38,7 @@ class TestRDSPhaseSetCommand:
     @pytest.mark.dependency(depends=["TestRDSPhaseSetCommand::test_encode"])
     def test_create_from(self):
         """\
-        <22><45><4C>
+        <22><85><4C>
         Set phase to 135.6 degrees for Reference Table entry: Input 4.
         """
         data = [0x22, 0x85, 0x4C]
