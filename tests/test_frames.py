@@ -5,7 +5,7 @@ from crc import CrcCalculator
 
 from uecp import __version__
 from uecp.frame import UECPFrame
-from uecp.messages import ProgrammeIdentificationMessage
+from uecp.commands import ProgrammeIdentificationSetCommand
 
 
 def test_version():
@@ -79,7 +79,7 @@ class TestUECPFrame:
         res = f.encode()
         assert bytes(res).hex() == "fe0000fd01004bf1ff"
 
-        f.add_message(ProgrammeIdentificationMessage(pi=0xFF))
+        f.add_message(ProgrammeIdentificationSetCommand(pi=0xFF))
         res = f.encode()
         assert bytes(res).hex() == "fe0000fd010501000000fd020d3dff"
 

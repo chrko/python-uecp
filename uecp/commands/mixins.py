@@ -1,7 +1,7 @@
-from uecp.messages.base import UECPMessageError
+from uecp.commands.base import UECPCommandException
 
 
-class InvalidDataSetNumber(UECPMessageError):
+class InvalidDataSetNumber(UECPCommandException):
     def __init__(self, data_set_number):
         self.data_set_number = data_set_number
 
@@ -15,7 +15,7 @@ class InvalidDataSetNumber(UECPMessageError):
         )
 
 
-class UECPMessageDataSetNumber:
+class UECPCommandDataSetNumber:
     CURRENT_DATA_SET = 0x00
     ALL_EXCEPT_CURRENT_DATA_SET = 0xFE
     ALL_DATA_SETS = 0xFF
@@ -45,7 +45,7 @@ class UECPMessageDataSetNumber:
         self.__data_set_number = new_data_set_number
 
 
-class InvalidProgrammeServiceNumber(UECPMessageError):
+class InvalidProgrammeServiceNumber(UECPCommandException):
     def __init__(self, programme_service_number):
         self.programme_service_number = programme_service_number
 
@@ -59,7 +59,7 @@ class InvalidProgrammeServiceNumber(UECPMessageError):
         )
 
 
-class UECPMessageProgrammeServiceNumber:
+class UECPCommandProgrammeServiceNumber:
     def __init__(self, programme_service_number=0, **kwargs):
         super().__init__(**kwargs)
         self.__programme_service_number = 0
@@ -85,5 +85,5 @@ class UECPMessageProgrammeServiceNumber:
         self.__programme_service_number = new_programme_service_number
 
 
-class UECPMessageDSNnPSN(UECPMessageDataSetNumber, UECPMessageProgrammeServiceNumber):
+class UECPCommandDSNnPSN(UECPCommandDataSetNumber, UECPCommandProgrammeServiceNumber):
     pass

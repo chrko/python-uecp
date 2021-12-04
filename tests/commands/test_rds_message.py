@@ -1,30 +1,30 @@
 import pytest
 
-from uecp.messages.base import (
-    UECPMessageDecodeElementCodeMismatchError,
-    UECPMessageDecodeNotEnoughData,
+from uecp.commands.base import (
+    UECPCommandDecodeElementCodeMismatchError,
+    UECPCommandDecodeNotEnoughData,
 )
-from uecp.messages.rds import (
-    DecoderInformationMessage,
-    ProgrammeIdentificationMessage,
-    ProgrammeServiceNameMessage,
-    ProgrammeTypeMessage,
-    ProgrammeTypeNameMessage,
+from uecp.commands.rds_message import (
+    DecoderInformationSetCommand,
+    ProgrammeIdentificationSetCommand,
+    ProgrammeServiceNameSetCommand,
+    ProgrammeTypeNameSetCommand,
+    ProgrammeTypeSetCommand,
     RadioTextBufferConfiguration,
-    RadioTextMessage,
-    TrafficAnnouncementProgrammeMessage,
+    RadioTextSetCommand,
+    TrafficAnnouncementProgrammeSetCommand,
 )
 
 
-class TestPIMessage:
+class TestPISetCommand:
     def test_encoding(self):
-        msg = ProgrammeIdentificationMessage(
+        msg = ProgrammeIdentificationSetCommand(
             pi=0xABCD, data_set_number=0x3F, programme_service_number=0xDA
         )
         assert msg.encode() == [0x01, 0x3F, 0xDA, 0xAB, 0xCD]
 
     def test_create_from(self):
-        msg, consumed_bytes = ProgrammeIdentificationMessage.create_from(
+        msg, consumed_bytes = ProgrammeIdentificationSetCommand.create_from(
             [0x01, 0x3F, 0xDA, 0xAB, 0xCD]
         )
         assert msg.pi == 0xABCD
@@ -32,16 +32,18 @@ class TestPIMessage:
         assert msg.data_set_number == 0x3F
         assert consumed_bytes == 5
 
-        with pytest.raises(UECPMessageDecodeNotEnoughData):
-            ProgrammeIdentificationMessage.create_from([0x01])
+        with pytest.raises(UECPCommandDecodeNotEnoughData):
+            ProgrammeIdentificationSetCommand.create_from([0x01])
 
-        with pytest.raises(UECPMessageDecodeElementCodeMismatchError):
-            ProgrammeIdentificationMessage.create_from([0xF1, 0x02, 0x03, 0x04, 0x05])
+        with pytest.raises(UECPCommandDecodeElementCodeMismatchError):
+            ProgrammeIdentificationSetCommand.create_from(
+                [0xF1, 0x02, 0x03, 0x04, 0x05]
+            )
 
 
-class TestPSMessage:
+class TestPSSetCommand:
     def test_encoding(self):
-        msg = ProgrammeServiceNameMessage(
+        msg = ProgrammeServiceNameSetCommand(
             ps="RADIO 1", data_set_number=0, programme_service_number=2
         )
         assert msg.encode() == [
@@ -59,7 +61,7 @@ class TestPSMessage:
         ]
 
     def test_create_from(self):
-        msg, consumed_bytes = ProgrammeServiceNameMessage.create_from(
+        msg, consumed_bytes = ProgrammeServiceNameSetCommand.create_from(
             [
                 0x02,
                 0x00,
@@ -80,13 +82,13 @@ class TestPSMessage:
         assert msg.ps == "RADIO 1"
 
 
-class TestDIMessage:
+class TestDISetCommand:
     def test_encoding(self):
-        msg = DecoderInformationMessage(stereo=True, programme_service_number=3)
+        msg = DecoderInformationSetCommand(stereo=True, programme_service_number=3)
         assert msg.encode() == [0x04, 0x00, 0x03, 0x01]
 
     def test_create_from(self):
-        msg, consumed_bytes = DecoderInformationMessage.create_from(
+        msg, consumed_bytes = DecoderInformationSetCommand.create_from(
             [0x04, 0x00, 0x03, 0x01]
         )
         assert consumed_bytes == 4
@@ -96,9 +98,9 @@ class TestDIMessage:
         assert msg.dynamic_pty is False
 
 
-class TestTATPMessage:
+class TestTATPSetCommand:
     def test_encoding(self):
-        msg = TrafficAnnouncementProgrammeMessage(
+        msg = TrafficAnnouncementProgrammeSetCommand(
             programme=True,
             announcement=False,
             data_set_number=0,
@@ -107,7 +109,7 @@ class TestTATPMessage:
         assert msg.encode() == [0x03, 0x00, 0x05, 0x02]
 
     def test_create_from(self):
-        msg, consumed_bytes = TrafficAnnouncementProgrammeMessage.create_from(
+        msg, consumed_bytes = TrafficAnnouncementProgrammeSetCommand.create_from(
             [0x03, 0x00, 0x05, 0x02]
         )
         assert consumed_bytes == 4
@@ -117,24 +119,26 @@ class TestTATPMessage:
         assert msg.programme is True
 
 
-class TestPTYMessage:
+class TestPTYSetCommand:
     def test_encoding(self):
-        msg = ProgrammeTypeMessage(
+        msg = ProgrammeTypeSetCommand(
             programme_type=8, data_set_number=0, programme_service_number=5
         )
         assert msg.encode() == [0x07, 0x00, 0x05, 0x08]
 
     def test_create_from(self):
-        msg, consumed_bytes = ProgrammeTypeMessage.create_from([0x07, 0x00, 0x05, 0x08])
+        msg, consumed_bytes = ProgrammeTypeSetCommand.create_from(
+            [0x07, 0x00, 0x05, 0x08]
+        )
         assert consumed_bytes == 4
         assert msg.programme_type == 8
         assert msg.data_set_number == 0
         assert msg.programme_service_number == 5
 
 
-class TestPTYNMessage:
+class TestPTYNSetCommand:
     def test_encoding(self):
-        msg = ProgrammeTypeNameMessage(
+        msg = ProgrammeTypeNameSetCommand(
             data_set_number=0,
             programme_service_number=2,
             programme_type_name="Football",
@@ -154,7 +158,7 @@ class TestPTYNMessage:
         ]
 
     def test_create_from(self):
-        msg, consumed_bytes = ProgrammeTypeNameMessage.create_from(
+        msg, consumed_bytes = ProgrammeTypeNameSetCommand.create_from(
             [
                 0x3E,
                 0x00,
@@ -175,18 +179,18 @@ class TestPTYNMessage:
         assert msg.programme_type_name == "Football"
 
 
-class TestRadioTextMessage:
+class TestRadioTextSetCommand:
     def test_create_from_1(self):
         """\
         <0A><00><01><04><0B><52><44><53>
         Send to current data set, programme service 1. This message causes the buffer to be
         flushed, the A/B flag to be toggled and the text >RDS< is transmitted indefinitely.
         """
-        msg, consumed_bytes = RadioTextMessage.create_from(
+        msg, consumed_bytes = RadioTextSetCommand.create_from(
             [0x0A, 0x00, 0x01, 0x04, 0x0B, 0x52, 0x44, 0x53]
-        )  # type: RadioTextMessage, int
+        )  # type: RadioTextSetCommand, int
         assert consumed_bytes == 8
-        assert isinstance(msg, RadioTextMessage)
+        assert isinstance(msg, RadioTextSetCommand)
         assert msg.data_set_number == 0
         assert msg.programme_service_number == 1
         assert msg.a_b_toggle is True
@@ -201,12 +205,12 @@ class TestRadioTextMessage:
         message >text< to the buffer to be repeated 8 times. The previous message and this
         message are cycled. >RDS< is sent five times, then >text< 8 times and so on."""
 
-        msg, consumed_bytes = RadioTextMessage.create_from(
+        msg, consumed_bytes = RadioTextSetCommand.create_from(
             [0x0A, 0x00, 0x01, 0x05, 0x51, 0x74, 0x65, 0x78, 0x74]
-        )  # type: RadioTextMessage, int
+        )  # type: RadioTextSetCommand, int
 
         assert consumed_bytes == 9
-        assert isinstance(msg, RadioTextMessage)
+        assert isinstance(msg, RadioTextSetCommand)
         assert msg.data_set_number == 0
         assert msg.programme_service_number == 1
         assert msg.a_b_toggle is True

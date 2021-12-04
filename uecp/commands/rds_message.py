@@ -1,25 +1,25 @@
 import enum
 import typing
 
-from uecp.messages.base import (
-    UECPMessage,
-    UECPMessageDecodeElementCodeMismatchError,
-    UECPMessageDecodeNotEnoughData,
-    UECPMessageError,
+from uecp.commands.base import (
+    UECPCommand,
+    UECPCommandDecodeElementCodeMismatchError,
+    UECPCommandDecodeNotEnoughData,
+    UECPCommandException,
 )
-from uecp.messages.mixins import UECPMessageDSNnPSN
+from uecp.commands.mixins import UECPCommandDSNnPSN
 
 
 # PIN 0x06 / Programme Item Number not implemented as deprecated
 # MS 0x05 / Music/Speech flag deprecated
 
 
-class InvalidProgrammeIdentification(UECPMessageError):
+class InvalidProgrammeIdentification(UECPCommandException):
     pass
 
 
-@UECPMessage.register_type
-class ProgrammeIdentificationMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class ProgrammeIdentificationSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x01
 
     def __init__(self, pi=0, data_set_number=0, programme_service_number=0):
@@ -42,14 +42,14 @@ class ProgrammeIdentificationMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeIdentificationMessage", int):
+    ) -> ("ProgrammeIdentificationSetCommand", int):
         data = list(data)
         if len(data) < 5:
-            raise UECPMessageDecodeNotEnoughData(len(data), 5)
+            raise UECPCommandDecodeNotEnoughData(len(data), 5)
 
         mec, dsn, psn, pi_msb, pi_lsb = data[0:5]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
 
         pi = pi_msb << 8 | pi_lsb
 
@@ -74,7 +74,7 @@ class ProgrammeIdentificationMessage(UECPMessage, UECPMessageDSNnPSN):
         self.__pi = new_pi
 
 
-class InvalidProgrammeServiceName(UECPMessageError):
+class InvalidProgrammeServiceName(UECPCommandException):
     def __init__(self, programme_service_name, cause: str = "unknown"):
         self.programme_service_name = programme_service_name
         self.cause = str(cause)
@@ -86,8 +86,8 @@ class InvalidProgrammeServiceName(UECPMessageError):
         return f"Supplied an invalid value for programme service name, cause: {self.cause}. Supplied {self.programme_service_name!r}"
 
 
-@UECPMessage.register_type
-class ProgrammeServiceNameMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class ProgrammeServiceNameSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x02
 
     def __init__(self, ps: str = "", data_set_number=0, programme_service_number=0):
@@ -126,22 +126,22 @@ class ProgrammeServiceNameMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeServiceNameMessage", int):
+    ) -> ("ProgrammeServiceNameSetCommand", int):
         data = list(data)
         if len(data) < 11:
-            raise UECPMessageDecodeNotEnoughData(len(data), 11)
+            raise UECPCommandDecodeNotEnoughData(len(data), 11)
 
         mec, dsn, psn = data[0:3]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
 
         ps = bytes(data[3:11]).decode("basic_rds_character_set")
 
         return cls(ps=ps, data_set_number=dsn, programme_service_number=psn), 11
 
 
-@UECPMessage.register_type
-class DecoderInformationMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class DecoderInformationSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x04
 
     def __init__(
@@ -194,14 +194,14 @@ class DecoderInformationMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("DecoderInformationMessage", int):
+    ) -> ("DecoderInformationSetCommand", int):
         data = list(data)
         if len(data) < 4:
-            raise UECPMessageDecodeNotEnoughData(len(data), 4)
+            raise UECPCommandDecodeNotEnoughData(len(data), 4)
 
         mec, dsn, psn, flags = data[0:4]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
 
         stereo = 0b1 & flags
         dynamic_pty = 0b1000 & flags
@@ -217,8 +217,8 @@ class DecoderInformationMessage(UECPMessage, UECPMessageDSNnPSN):
         )
 
 
-@UECPMessage.register_type
-class TrafficAnnouncementProgrammeMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class TrafficAnnouncementProgrammeSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x03
 
     def __init__(
@@ -262,14 +262,14 @@ class TrafficAnnouncementProgrammeMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("TrafficAnnouncementProgrammeMessage", int):
+    ) -> ("TrafficAnnouncementProgrammeSetCommand", int):
         data = list(data)
         if len(data) < 4:
-            raise UECPMessageDecodeNotEnoughData(len(data), 4)
+            raise UECPCommandDecodeNotEnoughData(len(data), 4)
 
         mec, dsn, psn, flags = data[0:4]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
 
         announcement = 0b1 & flags
         programme = 0b10 & flags
@@ -321,8 +321,8 @@ class ProgrammeType(enum.IntEnum):
     ALARM = 31
 
 
-@UECPMessage.register_type
-class ProgrammeTypeMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class ProgrammeTypeSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x07
 
     def __init__(
@@ -356,14 +356,14 @@ class ProgrammeTypeMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeTypeMessage", int):
+    ) -> ("ProgrammeTypeSetCommand", int):
         data = list(data)
         if len(data) < 4:
-            raise UECPMessageDecodeNotEnoughData(len(data), 4)
+            raise UECPCommandDecodeNotEnoughData(len(data), 4)
 
         mec, dsn, psn, programme_type = data[0:4]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
 
         programme_type = ProgrammeType(programme_type)
 
@@ -377,7 +377,7 @@ class ProgrammeTypeMessage(UECPMessage, UECPMessageDSNnPSN):
         )
 
 
-class InvalidProgrammeTypeName(UECPMessageError):
+class InvalidProgrammeTypeName(UECPCommandException):
     def __init__(self, programme_type_name, cause: str = "unknown"):
         self.programme_type_name = programme_type_name
         self.cause = str(cause)
@@ -389,8 +389,8 @@ class InvalidProgrammeTypeName(UECPMessageError):
         return f"Supplied an invalid value for programme type name, cause: {self.cause}. Supplied {self.programme_type_name!r}"
 
 
-@UECPMessage.register_type
-class ProgrammeTypeNameMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class ProgrammeTypeNameSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x3E
 
     def __init__(
@@ -433,14 +433,14 @@ class ProgrammeTypeNameMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeTypeNameMessage", int):
+    ) -> ("ProgrammeTypeNameSetCommand", int):
         data = list(data)
         if len(data) < 11:
-            raise UECPMessageDecodeNotEnoughData(len(data), 11)
+            raise UECPCommandDecodeNotEnoughData(len(data), 11)
 
         mec, dsn, psn = data[0:3]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
 
         programme_type_name = bytes(data[3:11]).decode("basic_rds_character_set")
 
@@ -460,12 +460,12 @@ class RadioTextBufferConfiguration(enum.IntEnum):
     APPEND = 0b10
 
 
-class InvalidNumberOfTransmissions(UECPMessageError):
+class InvalidNumberOfTransmissions(UECPCommandException):
     pass
 
 
-@UECPMessage.register_type
-class RadioTextMessage(UECPMessage, UECPMessageDSNnPSN):
+@UECPCommand.register_type
+class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x0A
     INFINITE_TRANSMISSIONS = 0
 
@@ -565,18 +565,18 @@ class RadioTextMessage(UECPMessage, UECPMessageDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RadioTextMessage", int):
+    ) -> ("RadioTextSetCommand", int):
         data = list(data)
         if len(data) < 4:
-            raise UECPMessageDecodeNotEnoughData(len(data), 4)
+            raise UECPCommandDecodeNotEnoughData(len(data), 4)
         mec, dsn, psn, mel = data[0:4]
         if mec != cls.ELEMENT_CODE:
-            raise UECPMessageDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
+            raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
         if mel == 0:
             return cls(data_set_number=0, programme_service_number=0)
         data = data[4:]
         if len(data) < mel:
-            raise UECPMessageDecodeNotEnoughData(len(data), mel)
+            raise UECPCommandDecodeNotEnoughData(len(data), mel)
         flags = data[0]
         text = bytes(data[1:mel]).decode("basic_rds_character_set")
         buffer_configuration = (flags & 0b0110_0000) >> 5

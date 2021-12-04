@@ -2,7 +2,7 @@ import codecs
 
 from crc import Configuration, CrcCalculator
 
-from uecp.messages import UECPMessage
+from uecp.commands import UECPCommand
 
 
 class UECPFrame:
@@ -27,7 +27,7 @@ class UECPFrame:
         self._site_address: int = 0
         self._encoder_address: int = 0
         self._sequence_counter: int = 0
-        self._messages: list[UECPMessage] = []
+        self._messages: list[UECPCommand] = []
 
     @property
     def site_address(self) -> int:
@@ -92,7 +92,7 @@ class UECPFrame:
             msg_data += message.encode()
 
         if not (0 <= len(msg_data) <= 255):
-            raise ValueError("Encoded messages must not exceed 255 bytes")
+            raise ValueError("Encoded commands must not exceed 255 bytes")
 
         data.append(len(msg_data))
         data += msg_data

@@ -1,10 +1,10 @@
 import pytest
 
-from uecp.messages.mixins import (
+from uecp.commands.mixins import (
     InvalidDataSetNumber,
     InvalidProgrammeServiceNumber,
-    UECPMessageDataSetNumber,
-    UECPMessageProgrammeServiceNumber,
+    UECPCommandDataSetNumber,
+    UECPCommandProgrammeServiceNumber,
 )
 
 
@@ -12,8 +12,8 @@ class TestMixins:
     @pytest.mark.parametrize(
         "cls, exception",
         [
-            (UECPMessageDataSetNumber, InvalidDataSetNumber),
-            (UECPMessageProgrammeServiceNumber, InvalidProgrammeServiceNumber),
+            (UECPCommandDataSetNumber, InvalidDataSetNumber),
+            (UECPCommandProgrammeServiceNumber, InvalidProgrammeServiceNumber),
         ],
     )
     @pytest.mark.parametrize("value", [0.5, "a string", -4])

@@ -2,9 +2,9 @@ import abc
 import typing
 
 
-class UECPMessage(abc.ABC):
+class UECPCommand(abc.ABC):
     ELEMENT_CODE = ...
-    ELEMENT_CODE_MAP: dict[int, "UECPMessage"] = {}
+    ELEMENT_CODE_MAP: dict[int, "UECPCommand"] = {}
 
     @abc.abstractmethod
     def encode(self) -> list[int]:
@@ -12,11 +12,11 @@ class UECPMessage(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def create_from(cls, data: typing.Union[bytes, list[int]]) -> ("UECPMessage", int):
+    def create_from(cls, data: typing.Union[bytes, list[int]]) -> ("UECPCommand", int):
         ...
 
     @classmethod
-    def register_type(cls, message_type: "UECPMessage") -> "UECPMessage":
+    def register_type(cls, message_type: "UECPCommand") -> "UECPCommand":
         mec = int(message_type.ELEMENT_CODE)
         if not (0x01 <= mec <= 0xFD):
             raise ValueError(f"MEC must be in [0x01, 0xFD], given {mec:#x}")
@@ -26,7 +26,7 @@ class UECPMessage(abc.ABC):
         return message_type
 
     @classmethod
-    def decode_messages(cls, data: typing.Union[bytes, list[int]]) -> ["UECPMessage"]:
+    def decode_messages(cls, data: typing.Union[bytes, list[int]]) -> ["UECPCommand"]:
         msgs = []
         data = list(data)
         while len(data) > 0:
@@ -39,17 +39,17 @@ class UECPMessage(abc.ABC):
         return msgs
 
 
-class UECPMessageError(Exception):
+class UECPCommandException(Exception):
     pass
 
 
-class UECPMessageDecodeError(UECPMessageError):
+class UECPCommandDecodeError(UECPCommandException):
     pass
 
 
-class UECPMessageDecodeNotEnoughData(UECPMessageDecodeError):
+class UECPCommandDecodeNotEnoughData(UECPCommandDecodeError):
     pass
 
 
-class UECPMessageDecodeElementCodeMismatchError(UECPMessageDecodeError):
+class UECPCommandDecodeElementCodeMismatchError(UECPCommandDecodeError):
     pass
