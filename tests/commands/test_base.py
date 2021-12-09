@@ -5,6 +5,10 @@ from uecp.commands.rds_message import (
 )
 
 
+def test_command_count():
+    assert len(UECPCommand.ELEMENT_CODE_MAP) == 18
+
+
 class TestDecodingCommands:
     def test_decoding_single_pi_cmd(self):
         cmds = UECPCommand.decode_commands([0x01, 0x3F, 0xDA, 0xAB, 0xCD])
