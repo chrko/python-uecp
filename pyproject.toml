@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "uecp"
+name = "python-uecp"
 version = "0.0.1"
 description = "UECP encoder & decoder"
 authors = ["Christian Kohlstedde <christian@kohlsted.de>"]
