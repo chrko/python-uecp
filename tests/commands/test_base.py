@@ -6,7 +6,7 @@ from uecp.commands.rds_message import (
 
 
 def test_command_count():
-    assert len(UECPCommand.ELEMENT_CODE_MAP) == 18
+    assert len(UECPCommand.ELEMENT_CODE_MAP) == 19
 
 
 class TestDecodingCommands:

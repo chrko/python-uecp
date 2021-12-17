@@ -165,30 +165,30 @@ class CommunicationModeSetCommand(UECPCommand):
 class DataSetSelectCommand(UECPCommand):
     ELEMENT_CODE = 0x1C
 
-    def __init__(self, data_set_number: int):
-        self._data_set_number = 0
-        self.data_set_number = data_set_number
+    def __init__(self, select_data_set_number: int):
+        self._select_data_set_number = 0
+        self.select_data_set_number = select_data_set_number
 
     @property
-    def data_set_number(self) -> int:
-        return self._data_set_number
+    def select_data_set_number(self) -> int:
+        return self._select_data_set_number
 
-    @data_set_number.setter
-    def data_set_number(self, new_data_set_number: int):
+    @select_data_set_number.setter
+    def select_data_set_number(self, value: int):
         try:
-            if new_data_set_number == int(new_data_set_number):
-                new_data_set_number = int(new_data_set_number)
+            if value == int(value):
+                value = int(value)
             else:
                 raise ValueError()
         except ValueError:
-            raise InvalidDataSetNumber(new_data_set_number)
+            raise InvalidDataSetNumber(value)
 
-        if not (0x00 <= new_data_set_number <= 0xFF):
-            raise InvalidDataSetNumber(new_data_set_number)
-        self._data_set_number = new_data_set_number
+        if not (0x01 <= value <= 0xFF):
+            raise InvalidDataSetNumber(value)
+        self._select_data_set_number = value
 
     def encode(self) -> list[int]:
-        return [self.ELEMENT_CODE, self._data_set_number]
+        return [self.ELEMENT_CODE, self._select_data_set_number]
 
     @classmethod
     def create_from(
@@ -197,7 +197,7 @@ class DataSetSelectCommand(UECPCommand):
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)
-        mec, data_set_number = data[0:2]
+        mec, select_data_set_number = data[0:2]
         if mec != cls.ELEMENT_CODE:
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
-        return cls(data_set_number=data_set_number), 2
+        return cls(select_data_set_number=select_data_set_number), 2

@@ -73,7 +73,9 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
     def setstate(self, state: tuple[bytes, int]):
         self.next_byte_stuffed = bool(state[1])
 
-    def decode(self, data: bytes, final: bool = False) -> bytes:
+    def decode(
+        self, data: typing.Union[bytes, list[int]], final: bool = False
+    ) -> bytes:
         decoded = []
         for byte in list(data):
             if 0x00 <= byte < 0xFD and not self.next_byte_stuffed:

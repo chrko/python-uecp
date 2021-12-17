@@ -3,13 +3,13 @@ import random
 import pytest
 from crc import CrcCalculator
 
-from uecp import __version__
-from uecp.frame import UECPFrame
-from uecp.commands import ProgrammeIdentificationSetCommand
-
-
-def test_version():
-    assert __version__ == "0.0.1"
+from uecp.commands import (
+    DataSetSelectCommand,
+    MessageAcknowledgementCommand,
+    ProgrammeIdentificationSetCommand,
+)
+from uecp.commands.bidirectional import ResponseCode
+from uecp.frame import UECPFrame, UECPFrameDecoder
 
 
 class TestUECPFrame:
@@ -107,3 +107,40 @@ def test_crc():
     crc2 = crc_ccitt(d)
     assert crc == crc2
     assert crc_calculator.verify_checksum(d, crc2)
+
+
+class TestUECPFrameDecoder:
+    def test_acknowledge(self):
+        data = [0xFE, 0x00, 0x00, 0x2A, 0x02, 0x18, 0x00, 0x4A, 0xB0, 0xFF]
+
+        decoder = UECPFrameDecoder()
+        frame, decoded_bytes = decoder.decode(data[:3])
+        assert frame is None
+        assert decoded_bytes == 3
+        frame, decoded_bytes = decoder.decode(data[3:])
+        assert frame is not None
+        assert decoded_bytes == 7
+
+        assert frame.site_address == 0
+        assert frame.encoder_address == 0
+        assert frame.sequence_counter == 0x2A
+        commands = frame.commands
+        assert len(commands) == 1
+        command = commands[0]
+        assert isinstance(command, MessageAcknowledgementCommand)
+        assert command.code is ResponseCode.OK
+
+    def test_data_set_response(self):
+        data = bytes.fromhex("FE00002B021C02D082FF")
+        decoder = UECPFrameDecoder()
+        frame, decoded_bytes = decoder.decode(data)
+        assert frame is not None
+        assert decoded_bytes == 10
+        assert frame.site_address == 0
+        assert frame.encoder_address == 0
+        assert frame.sequence_counter == 0x2B
+        commands = frame.commands
+        assert len(commands) == 1
+        command = commands[0]
+        assert isinstance(command, DataSetSelectCommand)
+        assert command.select_data_set_number == 2

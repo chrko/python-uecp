@@ -26,6 +26,7 @@ class ResponseCode(enum.IntEnum):
     UNEXPECTED_END_OF_MSG = 13
 
 
+@UECPCommand.register_type
 class MessageAcknowledgementCommand(UECPCommand):
     ELEMENT_CODE = 0x18
 

@@ -94,5 +94,5 @@ class TestDataSetSelectCommand:
         cmd, consumed_bytes = DataSetSelectCommand.create_from(data)
         assert consumed_bytes == 2
         assert isinstance(cmd, DataSetSelectCommand)
-        assert cmd.data_set_number == 23
+        assert cmd.select_data_set_number == 23
         assert cmd.encode() == data
