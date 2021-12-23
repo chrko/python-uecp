@@ -90,7 +90,7 @@ class RequestCommand(UECPCommand):
         self,
         *,
         element_code: int = None,
-        command: UECPCommand = None,
+        command: typing.Union[UECPCommand, type[UECPCommand]] = None,
         data_set_number: int = None,
         programme_service_number: int = None,
         additional_data: typing.Union[bytes, list[int]] = None,
