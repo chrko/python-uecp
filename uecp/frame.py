@@ -180,7 +180,9 @@ class UECPFrameDecoder:
                         raise ValueError("Stop bit seen, but no start bit")
                     if len(self._enclosed_data) <= 1:
                         raise ValueError("No payload data decoded")
-                    return UECPFrame.create_from_enclosed(self._enclosed_data), i
+                    frame = UECPFrame.create_from_enclosed(self._enclosed_data)
+                    self._enclosed_data.clear()
+                    return frame, i
                 else:
                     self._enclosed_data += list(
                         self._enclosed_incremental_decoder.decode([byte])

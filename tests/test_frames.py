@@ -144,3 +144,37 @@ class TestUECPFrameDecoder:
         command = commands[0]
         assert isinstance(command, DataSetSelectCommand)
         assert command.select_data_set_number == 2
+
+    def test_data_set_response_complete(self):
+        decoder = UECPFrameDecoder()
+
+        data = bytes.fromhex("fe 00 00 c5 02 18 00 1a b4 ff")
+
+        frame, decoded_bytes = decoder.decode(data[:3])
+        assert frame is None
+        assert decoded_bytes == 3
+        frame, decoded_bytes = decoder.decode(data[3:])
+        assert frame is not None
+        assert decoded_bytes == 7
+
+        assert frame.site_address == 0
+        assert frame.encoder_address == 0
+        assert frame.sequence_counter == 0xC5
+        commands = frame.commands
+        assert len(commands) == 1
+        command = commands[0]
+        assert isinstance(command, MessageAcknowledgementCommand)
+        assert command.code is ResponseCode.OK
+
+        data = bytes.fromhex("fe 00 00 c6 02 1c 02 6d ee ff")
+        frame, decoded_bytes = decoder.decode(data)
+        assert frame is not None
+        assert decoded_bytes == 10
+        assert frame.site_address == 0
+        assert frame.encoder_address == 0
+        assert frame.sequence_counter == 0xC6
+        commands = frame.commands
+        assert len(commands) == 1
+        command = commands[0]
+        assert isinstance(command, DataSetSelectCommand)
+        assert command.select_data_set_number == 2
