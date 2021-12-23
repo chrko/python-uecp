@@ -59,7 +59,7 @@ class SiteAddressSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("SiteAddressSetCommand", int):
+    ) -> tuple["SiteAddressSetCommand", int]:
         data = list(data)
         if len(data) < 4:
             raise UECPCommandDecodeNotEnoughData(len(data), 4)
@@ -67,7 +67,10 @@ class SiteAddressSetCommand(UECPCommand):
         if mec != cls.ELEMENT_CODE:
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
         site_address = site_address_high << 8 | site_address_low
-        return cls(mode=mode, site_address=site_address), 4
+        self = cls(
+            mode=SiteEncoderAddressSetCommandMode(mode), site_address=site_address
+        )
+        return self, 4
 
 
 @UECPCommand.register_type
@@ -113,14 +116,20 @@ class EncoderAddressSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("EncoderAddressSetCommand", int):
+    ) -> tuple["EncoderAddressSetCommand", int]:
         data = list(data)
         if len(data) < 3:
             raise UECPCommandDecodeNotEnoughData(len(data), 3)
         mec, mode, encoder_address = data[0:3]
         if mec != cls.ELEMENT_CODE:
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
-        return cls(mode=mode, encoder_address=encoder_address), 3
+        return (
+            cls(
+                mode=SiteEncoderAddressSetCommandMode(mode),
+                encoder_address=encoder_address,
+            ),
+            3,
+        )
 
 
 @enum.unique
@@ -151,14 +160,14 @@ class CommunicationModeSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("CommunicationModeSetCommand", int):
+    ) -> tuple["CommunicationModeSetCommand", int]:
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)
         mec, mode = data[0:2]
         if mec != cls.ELEMENT_CODE:
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
-        return cls(mode=mode), 2
+        return cls(mode=CommunicationMode(mode)), 2
 
 
 @UECPCommand.register_type
@@ -193,7 +202,7 @@ class DataSetSelectCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("DataSetSelectCommand", int):
+    ) -> tuple["DataSetSelectCommand", int]:
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)

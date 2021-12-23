@@ -28,7 +28,7 @@ class RDSEnabledSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RDSEnabledSetCommand", int):
+    ) -> tuple["RDSEnabledSetCommand", int]:
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)
@@ -37,7 +37,7 @@ class RDSEnabledSetCommand(UECPCommand):
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
         if enable not in (0x00, 0x01):
             raise ValueError("Not allowed value decoded")
-        return cls(enable=enable), 2
+        return cls(enable=bool(enable)), 2
 
 
 @UECPCommand.register_type
@@ -83,7 +83,7 @@ class RDSPhaseSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RDSPhaseSetCommand", int):
+    ) -> tuple["RDSPhaseSetCommand", int]:
         data = list(data)
         if len(data) < 3:
             raise UECPCommandDecodeNotEnoughData(len(data), 3)
@@ -137,7 +137,7 @@ class RDSLevelSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RDSLevelSetCommand", int):
+    ) -> tuple["RDSLevelSetCommand", int]:
         data = list(data)
         if len(data) < 3:
             raise UECPCommandDecodeNotEnoughData(len(data), 3)

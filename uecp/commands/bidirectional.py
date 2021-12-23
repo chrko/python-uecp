@@ -66,7 +66,7 @@ class MessageAcknowledgementCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("MessageAcknowledgementCommand", int):
+    ) -> tuple["MessageAcknowledgementCommand", int]:
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)
@@ -89,10 +89,10 @@ class RequestCommand(UECPCommand):
     def __init__(
         self,
         *,
-        element_code: int = None,
+        element_code: typing.Optional[int] = None,
         command: typing.Union[UECPCommand, type[UECPCommand]] = None,
-        data_set_number: int = None,
-        programme_service_number: int = None,
+        data_set_number: typing.Optional[int] = None,
+        programme_service_number: typing.Optional[int] = None,
         additional_data: typing.Union[bytes, list[int]] = None,
     ):
         if element_code is not None:
@@ -125,11 +125,11 @@ class RequestCommand(UECPCommand):
         return self._element_code
 
     @property
-    def data_set_number(self) -> int:
+    def data_set_number(self) -> typing.Optional[int]:
         return self._dsn
 
     @property
-    def programme_service_number(self) -> int:
+    def programme_service_number(self) -> typing.Optional[int]:
         return self._psn
 
     def encode(self) -> list[int]:
@@ -146,7 +146,7 @@ class RequestCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RequestCommand", int):
+    ) -> tuple["RequestCommand", int]:
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)

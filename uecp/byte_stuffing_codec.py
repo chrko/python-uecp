@@ -47,15 +47,15 @@ def decode(
 
 
 class Codec(codecs.Codec):
-    def encode(self, data: bytes, errors: str = "strict") -> tuple[bytes, int]:
+    def encode(self, data: bytes, errors: str = "strict") -> tuple[bytes, int]:  # type: ignore[override]
         return encode(data)
 
-    def decode(self, data: bytes, errors: str = "strict") -> tuple[bytes, int]:
+    def decode(self, data: bytes, errors: str = "strict") -> tuple[bytes, int]:  # type: ignore[override]
         return decode(data, errors=errors)
 
 
 class IncrementalEncoder(codecs.IncrementalEncoder):
-    def encode(self, data: bytes, final: bool = False) -> bytes:
+    def encode(self, data: bytes, final: bool = False) -> bytes:  # type: ignore[override]
         return bytes(encode(data)[0])
 
 
@@ -73,7 +73,7 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
     def setstate(self, state: tuple[bytes, int]):
         self.next_byte_stuffed = bool(state[1])
 
-    def decode(
+    def decode(  # type: ignore[override]
         self, data: typing.Union[bytes, list[int]], final: bool = False
     ) -> bytes:
         decoded = []

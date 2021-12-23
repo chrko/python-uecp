@@ -42,7 +42,7 @@ class ProgrammeIdentificationSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeIdentificationSetCommand", int):
+    ) -> tuple["ProgrammeIdentificationSetCommand", int]:
         data = list(data)
         if len(data) < 5:
             raise UECPCommandDecodeNotEnoughData(len(data), 5)
@@ -126,7 +126,7 @@ class ProgrammeServiceNameSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeServiceNameSetCommand", int):
+    ) -> tuple["ProgrammeServiceNameSetCommand", int]:
         data = list(data)
         if len(data) < 11:
             raise UECPCommandDecodeNotEnoughData(len(data), 11)
@@ -194,7 +194,7 @@ class DecoderInformationSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("DecoderInformationSetCommand", int):
+    ) -> tuple["DecoderInformationSetCommand", int]:
         data = list(data)
         if len(data) < 4:
             raise UECPCommandDecodeNotEnoughData(len(data), 4)
@@ -262,7 +262,7 @@ class TrafficAnnouncementProgrammeSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("TrafficAnnouncementProgrammeSetCommand", int):
+    ) -> tuple["TrafficAnnouncementProgrammeSetCommand", int]:
         data = list(data)
         if len(data) < 4:
             raise UECPCommandDecodeNotEnoughData(len(data), 4)
@@ -356,7 +356,7 @@ class ProgrammeTypeSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeTypeSetCommand", int):
+    ) -> tuple["ProgrammeTypeSetCommand", int]:
         data = list(data)
         if len(data) < 4:
             raise UECPCommandDecodeNotEnoughData(len(data), 4)
@@ -433,7 +433,7 @@ class ProgrammeTypeNameSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("ProgrammeTypeNameSetCommand", int):
+    ) -> tuple["ProgrammeTypeNameSetCommand", int]:
         data = list(data)
         if len(data) < 11:
             raise UECPCommandDecodeNotEnoughData(len(data), 11)
@@ -565,7 +565,7 @@ class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RadioTextSetCommand", int):
+    ) -> tuple["RadioTextSetCommand", int]:
         data = list(data)
         if len(data) < 4:
             raise UECPCommandDecodeNotEnoughData(len(data), 4)
@@ -573,7 +573,7 @@ class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
         if mec != cls.ELEMENT_CODE:
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
         if mel == 0:
-            return cls(data_set_number=0, programme_service_number=0)
+            return cls(data_set_number=0, programme_service_number=0), 4
         data = data[4:]
         if len(data) < mel:
             raise UECPCommandDecodeNotEnoughData(len(data), mel)

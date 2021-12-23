@@ -1,7 +1,7 @@
 import codecs
 import typing
 
-from crc import Configuration, CrcCalculator
+from crc import Configuration, CrcCalculator  # type: ignore
 
 from uecp.byte_stuffing_codec import (
     IncrementalDecoder as ByteStuffingIncrementalDecoder,
@@ -124,7 +124,7 @@ class UECPFrame:
         data.append(crc >> 8)
         data.append(crc & 0xFF)
 
-        data = list(codecs.encode(data, "uecp_frame"))
+        data = list(codecs.encode(data, "uecp_frame"))  # type: ignore
 
         return bytes([self.STA] + data + [self.STP])
 
@@ -196,7 +196,7 @@ class UECPFrameDecoder:
 
         return None, data[i:]
 
-    def reset(self) -> typing.NoReturn:
+    def reset(self):
         self._enclosed_data.clear()
         self._enclosed_incremental_decoder.reset()
         self._start_bit_seen = False

@@ -5,8 +5,8 @@ T_UECPCommand = typing.TypeVar("T_UECPCommand", bound="UECPCommand")
 
 
 class UECPCommand(abc.ABC):
-    ELEMENT_CODE = ...
-    ELEMENT_CODE_MAP: dict[int, "UECPCommand"] = {}
+    ELEMENT_CODE: typing.ClassVar[int]
+    ELEMENT_CODE_MAP: typing.ClassVar[dict[int, type["UECPCommand"]]] = {}
 
     @abc.abstractmethod
     def encode(self) -> list[int]:
@@ -14,13 +14,13 @@ class UECPCommand(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def create_from(cls, data: typing.Union[bytes, list[int]]) -> ("UECPCommand", int):
+    def create_from(
+        cls, data: typing.Union[bytes, list[int]]
+    ) -> tuple["UECPCommand", int]:
         ...
 
     @classmethod
-    def register_type(
-        cls, message_type: typing.Type[T_UECPCommand]
-    ) -> typing.Type[T_UECPCommand]:
+    def register_type(cls, message_type: type[T_UECPCommand]) -> type[T_UECPCommand]:
         mec = int(message_type.ELEMENT_CODE)
         if not (0x01 <= mec <= 0xFD):
             raise ValueError(f"MEC must be in [0x01, 0xFD], given {mec:#x}")
@@ -30,7 +30,9 @@ class UECPCommand(abc.ABC):
         return message_type
 
     @classmethod
-    def decode_commands(cls, data: typing.Union[bytes, list[int]]) -> ["UECPCommand"]:
+    def decode_commands(
+        cls, data: typing.Union[bytes, list[int]]
+    ) -> list["UECPCommand"]:
         cmds = []
         data = list(data)
         while len(data) > 0:

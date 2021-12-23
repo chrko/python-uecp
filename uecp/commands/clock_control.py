@@ -18,7 +18,8 @@ class RealTimeClockSetCommand(UECPCommand):
 
     def __init__(self, timestamp: typing.Optional[datetime] = None):
         self._timestamp = datetime.now(self.UTC)
-        self.timestamp = timestamp
+        if timestamp is not None:
+            self.timestamp = timestamp
 
     @property
     def timestamp(self) -> datetime:
@@ -44,7 +45,7 @@ class RealTimeClockSetCommand(UECPCommand):
             ts.minute,
             ts.second,
             round(ts.microsecond / 10_000),
-            self._encode_localtime_offset(self._timestamp.utcoffset()),
+            self._encode_localtime_offset(self._timestamp.utcoffset() or timedelta()),
         ]
 
         return data
@@ -52,7 +53,7 @@ class RealTimeClockSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RealTimeClockSetCommand", int):
+    ) -> tuple["RealTimeClockSetCommand", int]:
         data = list(data)
         if len(data) < 9:
             raise UECPCommandDecodeNotEnoughData(len(data), 9)
@@ -112,7 +113,7 @@ class RealTimeClockCorrectionSetCommand(UECPCommand):
 
     _STRUCT = struct.Struct(">h")
 
-    def __init__(self, adjustment_ms: 0):
+    def __init__(self, adjustment_ms: int = 0):
         self._adjustment_ms = 0
         self.adjustment_ms = adjustment_ms
 
@@ -132,7 +133,7 @@ class RealTimeClockCorrectionSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RealTimeClockCorrectionSetCommand", int):
+    ) -> tuple["RealTimeClockCorrectionSetCommand", int]:
         data = list(data)
         if len(data) < 3:
             raise UECPCommandDecodeNotEnoughData(len(data), 3)
@@ -165,7 +166,7 @@ class RealTimeClockEnabledSetCommand(UECPCommand):
     @classmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> ("RealTimeClockEnabledSetCommand", int):
+    ) -> tuple["RealTimeClockEnabledSetCommand", int]:
         data = list(data)
         if len(data) < 2:
             raise UECPCommandDecodeNotEnoughData(len(data), 2)
@@ -174,4 +175,4 @@ class RealTimeClockEnabledSetCommand(UECPCommand):
             raise UECPCommandDecodeElementCodeMismatchError(mec, cls.ELEMENT_CODE)
         if enable not in (0x00, 0x01):
             raise ValueError("Not allowed value decoded")
-        return cls(enable=enable), 2
+        return cls(enable=bool(enable)), 2

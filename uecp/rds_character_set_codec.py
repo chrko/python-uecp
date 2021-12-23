@@ -142,8 +142,8 @@ encoding_base_table.update(
     }
 )
 
-encoding_table = {}
-decoding_table = {}
+encoding_table: dict[str, int] = {}
+decoding_table: dict[int, str] = {}
 
 for (character_code, unicode_number) in encoding_base_table.items():
     unicode_char = chr(unicode_number)
