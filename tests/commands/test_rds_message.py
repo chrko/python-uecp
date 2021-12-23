@@ -1,5 +1,6 @@
 import pytest
 
+from tests.test_utils import from_arcos
 from uecp.commands.base import (
     UECPCommandDecodeElementCodeMismatchError,
     UECPCommandDecodeNotEnoughData,
@@ -14,6 +15,7 @@ from uecp.commands.rds_message import (
     RadioTextSetCommand,
     TrafficAnnouncementProgrammeSetCommand,
 )
+from uecp.frame import UECPFrameDecoder
 
 
 class TestPISetCommand:
@@ -217,3 +219,99 @@ class TestRadioTextSetCommand:
         assert cmd.buffer_configuration == RadioTextBufferConfiguration.APPEND
         assert cmd.number_of_transmissions == 8
         assert cmd.text == "text"
+
+    def test_complete_frame_setting(self):
+        decoder = UECPFrameDecoder()
+
+        data = from_arcos(
+            "FE,00,00,03,D3,0A,01,00,39,0A,52,44,53,20,69,73,20,6D,79,20,6C,6F,"
+            "76,65,20,6F,6E,20,61,69,72,20,77,69,74,68,20,72,61,64,69,6F,61,6B,"
+            "74,69,76,20,2D,20,64,61,73,20,43,61,6D,70,75,73,72,61,64,69,6F,0D,"
+            "0A,01,00,0F,47,D9,62,65,6C,73,74,20,67,65,69,6C,20,32,0D,0A,01,00,"
+            "3D,52,48,65,75,74,65,20,64,61,62,65,69,0A,4D,61,78,20,4D,99,73,74,"
+            "65,72,6D,91,6E,6E,63,68,65,6E,20,6D,69,74,20,56,69,76,69,65,6E,20,"
+            "75,6E,64,20,55,6D,6C,61,75,74,65,6E,20,73,61,74,74,0D,0A,01,00,3E,"
+            "4C,72,61,64,69,6F,61,6B,74,69,76,20,2D,20,64,65,69,6E,20,43,61,6D,"
+            "70,75,73,72,61,64,69,6F,20,61,75,66,20,64,65,72,20,31,30,35,2E,34,"
+            "20,4D,48,7A,20,75,6E,64,20,38,39,2E,36,20,4D,48,7A,0D,2D,EC,FF"
+        )
+        frame, consumed_bytes = decoder.decode(data)
+        assert consumed_bytes == len(data)
+        assert frame is not None
+        assert frame.site_address == 0
+        assert frame.encoder_address == 0
+        assert frame.sequence_counter == 0x03
+        assert len(frame.commands) == 4
+
+        cmd = frame.commands[0]  # type: RadioTextSetCommand
+        assert cmd.text == "RDS is my love on air with radioaktiv - das Campusradio\r"
+        assert cmd.buffer_configuration == RadioTextBufferConfiguration.TRUNCATE_BEFORE
+        assert cmd.number_of_transmissions == 5
+        assert cmd.a_b_toggle is False
+        assert cmd.data_set_number == 1
+
+        cmd = frame.commands[1]  # type: RadioTextSetCommand
+        assert cmd.text == "Übelst geil 2\r"
+        assert cmd.buffer_configuration == RadioTextBufferConfiguration.APPEND
+        assert cmd.number_of_transmissions == 3
+        assert cmd.a_b_toggle is True
+        assert cmd.data_set_number == 1
+
+        cmd = frame.commands[2]  # type: RadioTextSetCommand
+        assert (
+            cmd.text == "Heute dabei\nMax Müstermännchen mit Vivien und Umlauten satt\r"
+        )
+
+        cmd = frame.commands[3]  # type: RadioTextSetCommand
+        assert (
+            cmd.text == "radioaktiv - dein Campusradio auf der 105.4 MHz und 89.6 MHz\r"
+        )
+
+        data = from_arcos(
+            "FE,00,00,04,FA,0A,01,00,3F,4B,5A,75,6D,20,53,63,68,6C,75,73,73,20,"
+            "6E,6F,63,68,20,65,69,6E,20,70,61,61,72,20,57,6F,72,74,65,20,69,6E,"
+            "20,64,69,65,20,52,75,6E,64,65,2C,20,62,65,76,6F,72,20,65,73,20,7A,"
+            "75,20,45,6E,64,65,0A,01,00,3E,48,46,61,73,74,20,62,69,6E,20,69,63,"
+            "68,20,64,75,72,63,68,20,6D,69,74,20,64,65,6E,20,54,65,73,74,64,61,"
+            "74,65,6E,2C,20,68,6F,66,66,65,6E,74,6C,69,63,68,20,67,65,68,74,20,"
+            "65,73,20,6E,75,6E,0A,01,00,3E,48,57,6F,68,6C,20,6D,97,67,6C,69,63,"
+            "68,20,61,62,65,72,20,6C,65,69,64,65,72,20,77,65,69,74,65,72,68,69,"
+            "6E,20,6E,69,63,68,74,20,3A,28,20,44,61,73,20,77,91,72,65,20,73,63,"
+            "68,61,64,65,21,0D,0A,01,00,2F,46,4D,65,69,6E,20,6C,65,74,7A,65,72,"
+            "20,52,61,64,69,6F,54,65,78,74,20,66,99,72,20,68,65,75,74,65,2C,20,"
+            "68,6F,66,66,65,6E,74,6C,69,63,68,21,0D,8D,33,FF"
+        )
+
+        frame, consumed_bytes = decoder.decode(data)
+        assert consumed_bytes == len(data)
+        assert frame is not None
+        assert frame.site_address == 0
+        assert frame.encoder_address == 0
+        assert frame.sequence_counter == 0x04
+        assert len(frame.commands) == 4
+
+        cmd = frame.commands[0]  # type: RadioTextSetCommand
+        assert (
+            cmd.text == "Zum Schluss noch ein paar Worte in die Runde, bevor es zu Ende"
+        )
+        assert cmd.buffer_configuration == RadioTextBufferConfiguration.APPEND
+        assert cmd.number_of_transmissions == 5
+        assert cmd.a_b_toggle is True
+        assert cmd.data_set_number == 1
+
+        cmd = frame.commands[1]  # type: RadioTextSetCommand
+        assert (
+            cmd.text == "Fast bin ich durch mit den Testdaten, hoffentlich geht es nun"
+        )
+        assert cmd.buffer_configuration == RadioTextBufferConfiguration.APPEND
+        assert cmd.number_of_transmissions == 4
+        assert cmd.a_b_toggle is False
+        assert cmd.data_set_number == 1
+
+        cmd = frame.commands[2]  # type: RadioTextSetCommand
+        assert (
+            cmd.text == "Wohl möglich aber leider weiterhin nicht :( Das wäre schade!\r"
+        )
+
+        cmd = frame.commands[3]  # type: RadioTextSetCommand
+        assert cmd.text == "Mein letzer RadioText für heute, hoffentlich!\r"

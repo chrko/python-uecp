@@ -184,18 +184,22 @@ class UECPFrameDecoder:
                     if len(self._enclosed_data) <= 1:
                         raise ValueError("No payload data decoded")
                     frame = UECPFrame.create_from_enclosed(self._enclosed_data)
-                    self._enclosed_data.clear()
+                    self.reset()
                     return frame, i
                 else:
                     self._enclosed_data += list(
                         self._enclosed_incremental_decoder.decode([byte])
                     )
         except Exception as e:
-            self._enclosed_data.clear()
-            self._enclosed_incremental_decoder.reset()
+            self.reset()
             raise e
 
         return None, i
+
+    def reset(self) -> typing.NoReturn:
+        self._enclosed_data.clear()
+        self._enclosed_incremental_decoder.reset()
+        self._start_bit_seen = False
 
     @property
     def empty(self) -> bool:

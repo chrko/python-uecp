@@ -4,6 +4,9 @@ import typing
 encoding_base_table: dict[int, int] = {i: i for i in range(0x20, 0x7F)}
 encoding_base_table.update(
     {
+        # the only control chars allowed
+        ord("\r"): ord("\r"),
+        ord("\n"): ord("\n"),
         # chars not matching ascii
         0x24: 0x00A4,
         0x5E: 0x2015,

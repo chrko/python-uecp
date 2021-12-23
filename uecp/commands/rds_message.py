@@ -578,10 +578,11 @@ class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
         if len(data) < mel:
             raise UECPCommandDecodeNotEnoughData(len(data), mel)
         flags = data[0]
-        text = bytes(data[1:mel]).decode("basic_rds_character_set")
         buffer_configuration = (flags & 0b0110_0000) >> 5
         number_of_transmission = (flags & 0b0001_1110) >> 1
         a_b_toggle = flags & 0b0000_0001
+        text_data = bytes(data[1:mel])
+        text = text_data.decode("basic_rds_character_set")
 
         return (
             cls(
