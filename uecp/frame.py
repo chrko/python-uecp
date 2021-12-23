@@ -3,7 +3,9 @@ import typing
 
 from crc import Configuration, CrcCalculator
 
-from uecp.byte_stuffing_codec import IncrementalDecoder
+from uecp.byte_stuffing_codec import (
+    IncrementalDecoder as ByteStuffingIncrementalDecoder,
+)
 from uecp.commands import UECPCommand
 
 
@@ -96,7 +98,7 @@ class UECPFrame:
     def commands(self) -> list[UECPCommand]:
         return list(self._commands)
 
-    def encode(self) -> list[int]:
+    def encode(self) -> bytes:
         data: list[int] = []
 
         # address composed by 10 bits sites address & 6 bits encoder address
@@ -123,7 +125,7 @@ class UECPFrame:
 
         data = list(codecs.encode(data, "uecp_frame"))
 
-        return [self.STA] + data + [self.STP]
+        return bytes([self.STA] + data + [self.STP])
 
     @classmethod
     def create_from_enclosed(cls, data: typing.Union[bytes, list[int]]) -> "UECPFrame":
@@ -136,7 +138,7 @@ class UECPFrame:
         crc_calculator = CrcCalculator(cls.CRC_CONFIGURATION)
         crc_computed = crc_calculator.calculate_checksum(data)
         if crc != crc_computed:
-            raise ValueError("CRC error")
+            raise ValueError(f"CRC error {crc} vs {crc_computed}")
 
         address_high, address_low, sequence_counter = data[0:3]
         msg_len, msg_data = data[3], data[4:]
@@ -164,7 +166,7 @@ class UECPFrameDecoder:
     def __init__(self):
         self._start_bit_seen = False
         self._enclosed_data = []
-        self._enclosed_incremental_decoder = IncrementalDecoder()
+        self._enclosed_incremental_decoder = ByteStuffingIncrementalDecoder()
 
     def decode(
         self, data: typing.Union[bytes, list[int]]
@@ -193,3 +195,10 @@ class UECPFrameDecoder:
             raise e
 
         return None, i
+
+    @property
+    def empty(self) -> bool:
+        return (
+            len(self._enclosed_data) == 0
+            and self._enclosed_incremental_decoder.getstate()[1] == 1
+        )
