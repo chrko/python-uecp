@@ -1,6 +1,8 @@
 import abc
 import typing
 
+T_UECPCommand = typing.TypeVar("T_UECPCommand", bound="UECPCommand")
+
 
 class UECPCommand(abc.ABC):
     ELEMENT_CODE = ...
@@ -16,7 +18,9 @@ class UECPCommand(abc.ABC):
         ...
 
     @classmethod
-    def register_type(cls, message_type: "UECPCommand") -> "UECPCommand":
+    def register_type(
+        cls, message_type: typing.Type[T_UECPCommand]
+    ) -> typing.Type[T_UECPCommand]:
         mec = int(message_type.ELEMENT_CODE)
         if not (0x01 <= mec <= 0xFD):
             raise ValueError(f"MEC must be in [0x01, 0xFD], given {mec:#x}")
