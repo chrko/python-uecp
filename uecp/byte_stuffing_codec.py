@@ -25,7 +25,7 @@ def decode(
     data = []
     next_byte_stuffed = False
     decoded_bytes = len(stuffed_data)
-    for byte in list(stuffed_data):
+    for i, byte in enumerate(list(stuffed_data)):
         if 0x00 <= byte < 0xFD and not next_byte_stuffed:
             data.append(byte)
         elif byte == 0xFD and not next_byte_stuffed:
@@ -36,7 +36,7 @@ def decode(
         else:
             if errors == "strict":
                 raise UnicodeError(
-                    f"Unknown state, byte {byte:#x}, next_byte_stuffed {next_byte_stuffed}"
+                    f"Unknown state, byte {byte:#x}, next_byte_stuffed {next_byte_stuffed}, at position {i}"
                 )
             decoded_bytes -= 1
 
@@ -77,7 +77,7 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
         self, data: typing.Union[bytes, list[int]], final: bool = False
     ) -> bytes:
         decoded = []
-        for byte in list(data):
+        for i, byte in enumerate(list(data)):
             if 0x00 <= byte < 0xFD and not self.next_byte_stuffed:
                 decoded.append(byte)
             elif byte == 0xFD and not self.next_byte_stuffed:
@@ -88,7 +88,7 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
             else:
                 if self.errors == "strict":
                     raise UnicodeError(
-                        f"Unknown state, byte {byte:#x}, next_byte_stuffed {self.next_byte_stuffed}"
+                        f"Unknown state, byte {byte:#x}, next_byte_stuffed {self.next_byte_stuffed}, at position {i}"
                     )
 
         if final:

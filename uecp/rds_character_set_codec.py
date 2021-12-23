@@ -160,13 +160,15 @@ def encode(input_string: str, errors: str = "strict") -> tuple[bytes, int]:
     encoded = []
     encoded_chars = 0
 
-    for char in input_string:
+    for i, char in enumerate(input_string):
         try:
             encoded.append(encoding_table[char])
             encoded_chars += 1
         except KeyError:
             if errors == "strict":
-                raise UnicodeError(f"Cannot encode {char}, code point {ord(char):#x}")
+                raise UnicodeError(
+                    f"Cannot encode {char}, code point {ord(char):#x} at position {i}"
+                )
     return bytes(encoded), encoded_chars
 
 
@@ -174,13 +176,13 @@ def decode(data: bytes, errors: str = "strict") -> tuple[str, int]:
     decoded = ""
     decoded_chars = 0
 
-    for byte in list(data):
+    for i, byte in enumerate(list(data)):
         try:
             decoded += decoding_table[byte]
             decoded_chars += 1
         except KeyError:
             if errors == "strict":
-                raise UnicodeError(f"Cannot decode byte {byte:#x}")
+                raise UnicodeError(f"Cannot decode byte {byte:#x} at position {i}")
 
     return decoded, decoded_chars
 
