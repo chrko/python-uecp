@@ -7,10 +7,12 @@ from uecp.commands.base import (
 )
 from uecp.commands.rds_message import (
     DecoderInformationSetCommand,
+    InvalidNumberOfTransmissions,
     ProgrammeIdentificationSetCommand,
     ProgrammeServiceNameSetCommand,
     ProgrammeTypeNameSetCommand,
     ProgrammeTypeSetCommand,
+    RadioText,
     RadioTextBufferConfiguration,
     RadioTextSetCommand,
     TrafficAnnouncementProgrammeSetCommand,
@@ -179,6 +181,15 @@ class TestPTYNSetCommand:
         assert cmd.programme_service_number == 2
         assert cmd.data_set_number == 0
         assert cmd.programme_type_name == "Football"
+
+
+class TestRadioText:
+    def test_radiotext_validation(self):
+        with pytest.raises(UnicodeError):
+            RadioText(text="\0")
+
+        with pytest.raises(InvalidNumberOfTransmissions):
+            RadioText(number_of_transmissions=0x10)
 
 
 class TestRadioTextSetCommand:

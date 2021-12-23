@@ -1,6 +1,8 @@
 import enum
 import typing
 
+import attr
+
 from uecp.commands.base import (
     UECPCommand,
     UECPCommandDecodeElementCodeMismatchError,
@@ -464,6 +466,35 @@ class InvalidNumberOfTransmissions(UECPCommandException):
     pass
 
 
+@attr.s
+class RadioText:
+    text: str = attr.ib(default="", converter=str)
+    number_of_transmissions: int = attr.ib(default=0, converter=int)
+    a_b_toggle: bool = attr.ib(default=False, converter=bool)
+
+    @text.validator
+    def _check_text(self, _, new_text: str):
+        new_text = str(new_text)
+        if len(new_text) > 64:
+            raise InvalidProgrammeTypeName(
+                new_text, f"Radio text supports only up to 64 characters"
+            )
+        new_text.encode("basic_rds_character_set")
+
+    @number_of_transmissions.validator
+    def _check_number_of_transmissions(self, _, new_not: int):
+        try:
+            if new_not == int(new_not):
+                new_not = int(new_not)
+            else:
+                raise ValueError()
+        except ValueError:
+            raise InvalidNumberOfTransmissions(new_not)
+
+        if not (0x0 <= new_not <= 0xF):
+            raise InvalidNumberOfTransmissions(new_not)
+
+
 @UECPCommand.register_type
 class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
     ELEMENT_CODE = 0x0A
@@ -477,89 +508,75 @@ class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
         buffer_configuration=RadioTextBufferConfiguration.TRUNCATE_BEFORE,
         data_set_number=0,
         programme_service_number=0,
+        radiotext: RadioText = None,
     ):
         super().__init__(
             data_set_number=data_set_number,
             programme_service_number=programme_service_number,
         )
-        self.__text = ""
-        self.text = text
-        self.__number_of_transmissions = 0
-        self.number_of_transmissions = number_of_transmissions
-        self.__a_b_toggle = bool(a_b_toggle)
-        self.__buffer_configuration = RadioTextBufferConfiguration(buffer_configuration)
+        if radiotext is not None:
+            self._radiotext = radiotext
+        else:
+            self._radiotext = RadioText(
+                text=text,
+                number_of_transmissions=number_of_transmissions,
+                a_b_toggle=a_b_toggle,
+            )
+        self._buffer_configuration = RadioTextBufferConfiguration(buffer_configuration)
 
     @property
     def text(self) -> str:
-        return self.__text
+        return self._radiotext.text
 
     @text.setter
     def text(self, new_text: str):
-        new_text = str(new_text)
-        if len(new_text) > 64:
-            raise InvalidProgrammeTypeName(
-                new_text, f"Radio text supports only up to 64 characters"
-            )
-        new_text = new_text.rstrip(" ")
-        try:
-            new_text.encode("basic_rds_character_set")
-        except ValueError as e:
-            raise InvalidProgrammeServiceName(
-                new_text, f"Radio text cannot be encoded, exc={e!r}"
-            )
-        self.__text = new_text
+        self._radiotext.text = new_text
 
     @property
     def number_of_transmissions(self) -> int:
-        return self.__number_of_transmissions
+        return self._radiotext.number_of_transmissions
 
     @number_of_transmissions.setter
     def number_of_transmissions(self, new_not: int):
-        try:
-            if new_not == int(new_not):
-                new_not = int(new_not)
-            else:
-                raise ValueError()
-        except ValueError:
-            raise InvalidNumberOfTransmissions(new_not)
-
-        if not (0x0 <= new_not <= 0xF):
-            raise InvalidNumberOfTransmissions(new_not)
-        self.__number_of_transmissions = new_not
+        self._radiotext.number_of_transmissions = new_not
 
     @property
     def a_b_toggle(self) -> bool:
-        return self.__a_b_toggle
+        return self._radiotext.a_b_toggle
 
     @a_b_toggle.setter
     def a_b_toggle(self, toggle: bool):
-        self.__a_b_toggle = bool(toggle)
+        self._radiotext.a_b_toggle = toggle
 
     @property
     def buffer_configuration(self) -> RadioTextBufferConfiguration:
-        return self.__buffer_configuration
+        return self._buffer_configuration
 
     @buffer_configuration.setter
     def buffer_configuration(self, buffer_conf: RadioTextBufferConfiguration):
-        self.__buffer_configuration = RadioTextBufferConfiguration(buffer_conf)
+        self._buffer_configuration = RadioTextBufferConfiguration(buffer_conf)
+
+    @property
+    def radiotext(self) -> RadioText:
+        return self._radiotext
 
     def encode(self) -> list[int]:
         data = [self.ELEMENT_CODE, self.data_set_number, self.programme_service_number]
         if (
-            len(self.__text) == 0
-            and self.__buffer_configuration
+            len(self._radiotext.text) == 0
+            and self._buffer_configuration
             is RadioTextBufferConfiguration.TRUNCATE_BEFORE
         ):
             data.append(0)
         else:
-            mel = 1 + len(self.__text)
+            mel = 1 + len(self._radiotext.text)
             flags = (
-                self.__buffer_configuration << 5
-                | self.__number_of_transmissions << 1
-                | self.__a_b_toggle
+                self._buffer_configuration << 5
+                | self._radiotext.number_of_transmissions << 1
+                | self._radiotext.a_b_toggle
             )
             data += [mel, flags]
-            data += list(self.__text.encode("basic_rds_character_set"))
+            data += list(self._radiotext.text.encode("basic_rds_character_set"))
         return data
 
     @classmethod
