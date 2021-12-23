@@ -114,12 +114,12 @@ class TestUECPFrameDecoder:
         data = [0xFE, 0x00, 0x00, 0x2A, 0x02, 0x18, 0x00, 0x4A, 0xB0, 0xFF]
 
         decoder = UECPFrameDecoder()
-        frame, decoded_bytes = decoder.decode(data[:3])
+        frame, remaining_data = decoder.decode(data[:3])
         assert frame is None
-        assert decoded_bytes == 3
+        assert len(remaining_data) == 0
         frame, decoded_bytes = decoder.decode(data[3:])
         assert frame is not None
-        assert decoded_bytes == 7
+        assert len(remaining_data) == 0
 
         assert frame.site_address == 0
         assert frame.encoder_address == 0
@@ -133,9 +133,9 @@ class TestUECPFrameDecoder:
     def test_data_set_response(self):
         data = bytes.fromhex("FE00002B021C02D082FF")
         decoder = UECPFrameDecoder()
-        frame, decoded_bytes = decoder.decode(data)
+        frame, remaining_data = decoder.decode(data)
         assert frame is not None
-        assert decoded_bytes == 10
+        assert len(remaining_data) == 0
         assert frame.site_address == 0
         assert frame.encoder_address == 0
         assert frame.sequence_counter == 0x2B
@@ -148,14 +148,13 @@ class TestUECPFrameDecoder:
     def test_data_set_response_complete(self):
         decoder = UECPFrameDecoder()
 
-        data = bytes.fromhex("fe 00 00 c5 02 18 00 1a b4 ff")
+        data = bytes.fromhex(
+            "fe 00 00 c5 02 18 00 1a b4 ff fe 00 00 c6 02 1c 02 6d ee ff"
+        )
 
-        frame, decoded_bytes = decoder.decode(data[:3])
-        assert frame is None
-        assert decoded_bytes == 3
-        frame, decoded_bytes = decoder.decode(data[3:])
+        frame, remaining_data = decoder.decode(data)
         assert frame is not None
-        assert decoded_bytes == 7
+        assert len(remaining_data) == 10
 
         assert frame.site_address == 0
         assert frame.encoder_address == 0
@@ -166,10 +165,9 @@ class TestUECPFrameDecoder:
         assert isinstance(command, MessageAcknowledgementCommand)
         assert command.code is ResponseCode.OK
 
-        data = bytes.fromhex("fe 00 00 c6 02 1c 02 6d ee ff")
-        frame, decoded_bytes = decoder.decode(data)
+        frame, remaining_data = decoder.decode(remaining_data)
         assert frame is not None
-        assert decoded_bytes == 10
+        assert len(remaining_data) == 0
         assert frame.site_address == 0
         assert frame.encoder_address == 0
         assert frame.sequence_counter == 0xC6

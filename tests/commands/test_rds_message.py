@@ -235,8 +235,8 @@ class TestRadioTextSetCommand:
             "70,75,73,72,61,64,69,6F,20,61,75,66,20,64,65,72,20,31,30,35,2E,34,"
             "20,4D,48,7A,20,75,6E,64,20,38,39,2E,36,20,4D,48,7A,0D,2D,EC,FF"
         )
-        frame, consumed_bytes = decoder.decode(data)
-        assert consumed_bytes == len(data)
+        frame, remaining_data = decoder.decode(data)
+        assert len(remaining_data) == 0
         assert frame is not None
         assert frame.site_address == 0
         assert frame.encoder_address == 0
@@ -282,8 +282,8 @@ class TestRadioTextSetCommand:
             "68,6F,66,66,65,6E,74,6C,69,63,68,21,0D,8D,33,FF"
         )
 
-        frame, consumed_bytes = decoder.decode(data)
-        assert consumed_bytes == len(data)
+        frame, remaining_data = decoder.decode(data)
+        assert len(remaining_data) == 0
         assert frame is not None
         assert frame.site_address == 0
         assert frame.encoder_address == 0

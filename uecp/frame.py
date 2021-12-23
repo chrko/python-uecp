@@ -171,7 +171,7 @@ class UECPFrameDecoder:
 
     def decode(
         self, data: typing.Union[bytes, list[int]]
-    ) -> tuple[typing.Optional[UECPFrame], int]:
+    ) -> tuple[typing.Optional[UECPFrame], typing.Union[bytes, list[int]]]:
         i = 0
 
         try:
@@ -185,7 +185,7 @@ class UECPFrameDecoder:
                         raise ValueError("No payload data decoded")
                     frame = UECPFrame.create_from_enclosed(self._enclosed_data)
                     self.reset()
-                    return frame, i
+                    return frame, data[i:]
                 else:
                     self._enclosed_data += list(
                         self._enclosed_incremental_decoder.decode([byte])
@@ -194,7 +194,7 @@ class UECPFrameDecoder:
             self.reset()
             raise e
 
-        return None, i
+        return None, data[i:]
 
     def reset(self) -> typing.NoReturn:
         self._enclosed_data.clear()
