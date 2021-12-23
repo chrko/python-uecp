@@ -88,8 +88,9 @@ class UECPFrame:
             raise ValueError("Sequence counter must be an integer")
         self._sequence_counter = int(new_sequence_counter)
 
-    def add_command(self, msg):
-        self._commands.append(msg)
+    def add_command(self, *msgs):
+        for msg in msgs:
+            self._commands.append(msg)
 
     def clear_commands(self):
         self._commands = []
