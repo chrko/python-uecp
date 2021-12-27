@@ -42,6 +42,8 @@ class UECPFrame:
         self.site_address = site_address
         self.encoder_address = encoder_address
         self.sequence_counter = sequence_counter
+
+        self._assumed_command_length = 0
         if commands is not None:
             for command in commands:
                 self.add_command(command)
@@ -88,9 +90,13 @@ class UECPFrame:
             raise ValueError("Sequence counter must be an integer")
         self._sequence_counter = int(new_sequence_counter)
 
-    def add_command(self, *msgs):
-        for msg in msgs:
-            self._commands.append(msg)
+    def add_command(self, *commands: UECPCommand):
+        for command in commands:
+            cmd_len = len(command.encode())
+            if self._assumed_command_length + cmd_len > 255:
+                raise OverflowError()
+            self._assumed_command_length += cmd_len
+            self._commands.append(command)
 
     def clear_commands(self):
         self._commands = []
