@@ -1,5 +1,6 @@
 import enum
 import typing
+import warnings
 
 import attr
 
@@ -466,31 +467,53 @@ class InvalidNumberOfTransmissions(UECPCommandException):
     pass
 
 
+def _ensure_radio_text_carriage_return(*values: str) -> str:
+    if len(values) < 1:
+        import inspect
+
+        raise TypeError(
+            f"{inspect.stack()[0][3]} must be called with at least one argument and the last one must be a string"
+        )
+    value = values[-1]
+    value = str(value)
+    if 0 < len(value) < 61 and value[-1] != "\r":
+        value += "\r"
+        warnings.warn(
+            "Implicitly appending a carriage return 0x0D to radio text shorter than 61 characters"
+        )
+    return value
+
+
+def _check_radio_text(_, __, value: str):
+    value = str(value)
+    if len(value) > 64 or len(value) == 0:
+        raise ValueError(
+            f"Radio text supports only up to 64 characters and must not be empty, given {value!r}",
+        )
+    if len(value) < 61 and value[-1] != "\r":
+        raise ValueError(
+            f"Radio text shorter than 61 characters must be terminated by a carriage return, given {value!r}"
+        )
+    value.encode("basic_rds_character_set")
+
+    return value
+
+
 @attr.s
 class RadioText:
-    text: str = attr.ib(default="", converter=str)
+    text: str = attr.ib(
+        converter=_ensure_radio_text_carriage_return,
+        validator=_check_radio_text,
+        on_setattr=[
+            _ensure_radio_text_carriage_return,  # type:ignore
+            _check_radio_text,
+        ],
+    )
     number_of_transmissions: int = attr.ib(default=0, converter=int)
     a_b_toggle: bool = attr.ib(default=False, converter=bool)
 
-    @text.validator
-    def _check_text(self, _, new_text: str):
-        new_text = str(new_text)
-        if len(new_text) > 64:
-            raise InvalidProgrammeTypeName(
-                new_text, f"Radio text supports only up to 64 characters"
-            )
-        new_text.encode("basic_rds_character_set")
-
     @number_of_transmissions.validator
     def _check_number_of_transmissions(self, _, new_not: int):
-        try:
-            if new_not == int(new_not):
-                new_not = int(new_not)
-            else:
-                raise ValueError()
-        except ValueError:
-            raise InvalidNumberOfTransmissions(new_not)
-
         if not (0x0 <= new_not <= 0xF):
             raise InvalidNumberOfTransmissions(new_not)
 

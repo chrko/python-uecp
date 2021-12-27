@@ -183,13 +183,40 @@ class TestPTYNSetCommand:
         assert cmd.programme_type_name == "Football"
 
 
+implicit_carriage_return_warnings = pytest.warns(
+    UserWarning,
+    match="Implicitly appending a carriage return 0x0D to radio text shorter than 61 characters",
+)
+
+
 class TestRadioText:
     def test_radiotext_validation(self):
-        with pytest.raises(UnicodeError):
+        with pytest.raises(UnicodeError), implicit_carriage_return_warnings:
             RadioText(text="\0")
 
-        with pytest.raises(InvalidNumberOfTransmissions):
-            RadioText(number_of_transmissions=0x10)
+        with pytest.raises(
+            InvalidNumberOfTransmissions
+        ), implicit_carriage_return_warnings:
+            RadioText(text="ABCDE", number_of_transmissions=0x10)
+
+        with pytest.raises(ValueError, match="must not be empty"):
+            RadioText(text="")
+
+    def test_carriage_return(self):
+        with implicit_carriage_return_warnings:
+            rt = RadioText(text="My lovely radio")
+            assert rt.text == "My lovely radio\r"
+
+        with implicit_carriage_return_warnings:
+            rt.text = "My RADIO is great"
+            assert rt.text == "My RADIO is great\r"
+
+        rt = RadioText(
+            text="This text is longer than 61 characters and a CR isn't required"
+        )
+        assert (
+            rt.text == "This text is longer than 61 characters and a CR isn't required"
+        )
 
 
 class TestRadioTextSetCommand:
@@ -199,17 +226,22 @@ class TestRadioTextSetCommand:
         Send to current data set, programme service 1. This message causes the buffer to be
         flushed, the A/B flag to be toggled and the text >RDS< is transmitted indefinitely.
         """
-        cmd, consumed_bytes = RadioTextSetCommand.create_from(
-            [0x0A, 0x00, 0x01, 0x04, 0x0B, 0x52, 0x44, 0x53]
-        )  # type: RadioTextSetCommand, int
-        assert consumed_bytes == 8
-        assert isinstance(cmd, RadioTextSetCommand)
-        assert cmd.data_set_number == 0
-        assert cmd.programme_service_number == 1
-        assert cmd.a_b_toggle is True
-        assert cmd.buffer_configuration == RadioTextBufferConfiguration.TRUNCATE_BEFORE
-        assert cmd.number_of_transmissions == 5
-        assert cmd.text == "RDS"
+        with implicit_carriage_return_warnings:
+            cmd, consumed_bytes = RadioTextSetCommand.create_from(
+                [0x0A, 0x00, 0x01, 0x04, 0x0B, 0x52, 0x44, 0x53]
+            )  # type: RadioTextSetCommand, int
+            assert consumed_bytes == 8
+            assert isinstance(cmd, RadioTextSetCommand)
+            assert cmd.data_set_number == 0
+            assert cmd.programme_service_number == 1
+            assert cmd.a_b_toggle is True
+            assert (
+                cmd.buffer_configuration == RadioTextBufferConfiguration.TRUNCATE_BEFORE
+            )
+            assert cmd.number_of_transmissions == 5
+            assert (
+                cmd.text == "RDS\r"
+            )  # We enforce appending \r to texts shorter than 61 chars
 
     def test_create_from_2(self):
         """\
@@ -217,19 +249,21 @@ class TestRadioTextSetCommand:
         Send to current data set, programme service 1. This, message adds another Radiotext
         message >text< to the buffer to be repeated 8 times. The previous message and this
         message are cycled. >RDS< is sent five times, then >text< 8 times and so on."""
+        with implicit_carriage_return_warnings:
+            cmd, consumed_bytes = RadioTextSetCommand.create_from(
+                [0x0A, 0x00, 0x01, 0x05, 0x51, 0x74, 0x65, 0x78, 0x74]
+            )  # type: RadioTextSetCommand, int
 
-        cmd, consumed_bytes = RadioTextSetCommand.create_from(
-            [0x0A, 0x00, 0x01, 0x05, 0x51, 0x74, 0x65, 0x78, 0x74]
-        )  # type: RadioTextSetCommand, int
-
-        assert consumed_bytes == 9
-        assert isinstance(cmd, RadioTextSetCommand)
-        assert cmd.data_set_number == 0
-        assert cmd.programme_service_number == 1
-        assert cmd.a_b_toggle is True
-        assert cmd.buffer_configuration == RadioTextBufferConfiguration.APPEND
-        assert cmd.number_of_transmissions == 8
-        assert cmd.text == "text"
+            assert consumed_bytes == 9
+            assert isinstance(cmd, RadioTextSetCommand)
+            assert cmd.data_set_number == 0
+            assert cmd.programme_service_number == 1
+            assert cmd.a_b_toggle is True
+            assert cmd.buffer_configuration == RadioTextBufferConfiguration.APPEND
+            assert cmd.number_of_transmissions == 8
+            assert (
+                cmd.text == "text\r"
+            )  # We enforce appending \r to texts shorter than 61 chars
 
     def test_complete_frame_setting(self):
         decoder = UECPFrameDecoder()
