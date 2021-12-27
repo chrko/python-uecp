@@ -8,9 +8,9 @@ from uecp.commands import (
     MessageAcknowledgementCommand,
     RDSEnabledSetCommand,
     RequestCommand,
+    ResponseCode,
     UECPCommand,
 )
-from uecp.commands.bidirectional import ResponseCode
 from uecp.frame import UECPFrame
 from uecp.serial_con.protocol import open_serial_protocol, UECPSerialProtocol
 

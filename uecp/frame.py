@@ -6,7 +6,7 @@ from crc import Configuration, CrcCalculator  # type: ignore
 from uecp.byte_stuffing_codec import (
     IncrementalDecoder as ByteStuffingIncrementalDecoder,
 )
-from uecp.commands import UECPCommand
+from uecp.commands.base import UECPCommand
 
 
 class UECPFrame:

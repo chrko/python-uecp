@@ -2,8 +2,11 @@ import random
 
 import pytest
 
-from uecp.commands import RDSEnabledSetCommand, RDSPhaseSetCommand
-from uecp.commands.rds_control import RDSLevelSetCommand
+from uecp.commands.rds_control import (
+    RDSEnabledSetCommand,
+    RDSLevelSetCommand,
+    RDSPhaseSetCommand,
+)
 
 
 class TestRDSEnabledSetCommand:
