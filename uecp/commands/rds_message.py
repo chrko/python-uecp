@@ -12,7 +12,6 @@ from uecp.commands.base import (
 )
 from uecp.commands.mixins import UECPCommandDSNnPSN
 
-
 # PIN 0x06 / Programme Item Number not implemented as deprecated
 # MS 0x05 / Music/Speech flag deprecated
 
