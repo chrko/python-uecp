@@ -39,4 +39,4 @@ jobs:
         if: matrix.python-version == '3.9'
       - name: Check static typing
         run: |
-          poetry run mypy uecp
+          poetry run mypy src
