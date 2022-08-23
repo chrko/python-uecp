@@ -31,7 +31,6 @@ jobs:
       - name: Check style guide
         run: |
           poetry run flake8
-        continue-on-error: true # Currently no ready
       - name: Run tests
         run: |
           poetry run pytest tests -p no:sugar --cov=uecp --cov-report=xml
