@@ -1,0 +1,43 @@
+name: Tests
+
+on: [ push ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        python-version: [ "3.9", "3.10" ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+      - name: Install poetry
+        run: |
+          poetry install
+      - name: Show poetry debug information
+        run: |
+          poetry debug
+      - name: Check formatting
+        run: |
+          poetry run black --diff --check .
+          poetry run isort --check .
+      - name: Check style guide
+        run: |
+          poetry run flake8
+        continue-on-error: true # Currently no ready
+      - name: Run tests
+        run: |
+          poetry run pytest tests -p no:sugar --cov=uecp --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        if: matrix.python-version == '3.9'
+      - name: Check static typing
+        run: |
+          poetry run mypy uecp
