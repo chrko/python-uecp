@@ -108,7 +108,7 @@ class ProgrammeServiceNameSetCommand(UECPCommand, UECPCommandDSNnPSN):
     def ps(self, new_ps: str):
         new_ps = str(new_ps)
         if len(new_ps) > 8:
-            raise InvalidProgrammeServiceName(new_ps, f"PS supports only 8 characters")
+            raise InvalidProgrammeServiceName(new_ps, "PS supports only 8 characters")
         new_ps = new_ps.rstrip(" ")
         try:
             new_ps.encode("basic_rds_character_set")
@@ -414,7 +414,7 @@ class ProgrammeTypeNameSetCommand(UECPCommand, UECPCommandDSNnPSN):
         new_programme_type_name = str(new_programme_type_name)
         if len(new_programme_type_name) > 8:
             raise InvalidProgrammeTypeName(
-                new_programme_type_name, f"PTYN supports only 8 characters"
+                new_programme_type_name, "PTYN supports only 8 characters"
             )
         new_programme_type_name = new_programme_type_name.rstrip(" ")
         try:
