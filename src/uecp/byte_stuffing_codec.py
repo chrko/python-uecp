@@ -41,7 +41,7 @@ def decode(
             decoded_bytes -= 1
 
     if next_byte_stuffed and errors == "strict":
-        raise UnicodeError(f"Expecting one more byte as byte stuffing must be happened")
+        raise UnicodeError("Expecting one more byte as byte stuffing must be happened")
 
     return bytes(data), decoded_bytes
 
@@ -94,7 +94,7 @@ class IncrementalDecoder(codecs.IncrementalDecoder):
         if final:
             if self.next_byte_stuffed and self.errors == "strict":
                 raise UnicodeError(
-                    f"Expecting one more byte as byte stuffing must be happened"
+                    "Expecting one more byte as byte stuffing must be happened"
                 )
             self.next_byte_stuffed = False
 

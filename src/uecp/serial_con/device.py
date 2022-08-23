@@ -12,7 +12,7 @@ from uecp.commands import (
     UECPCommand,
 )
 from uecp.frame import UECPFrame
-from uecp.serial_con.protocol import open_serial_protocol, UECPSerialProtocol
+from uecp.serial_con.protocol import UECPSerialProtocol, open_serial_protocol
 
 
 @attr.s(
