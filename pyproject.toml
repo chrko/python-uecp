@@ -17,17 +17,17 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-crc = "^1.1.2"
-attrs = "^21.2.0"
+crc = "^1.2.0"
+attrs = "^22.1.0"
 pyserial = "^3.5"
 pyserial-asyncio = "^0.6"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
-black = "^21.11b1"
+pytest = "^7.1.2"
+black = "^22.6.0"
 pytest-cov = "^3.0.0"
 pytest-dependency = "^0.5.1"
-mypy = "^0.930"
+mypy = "^0.971"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
