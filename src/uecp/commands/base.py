@@ -9,15 +9,13 @@ class UECPCommand(abc.ABC):
     ELEMENT_CODE_MAP: typing.ClassVar[dict[int, type["UECPCommand"]]] = {}
 
     @abc.abstractmethod
-    def encode(self) -> list[int]:
-        ...
+    def encode(self) -> list[int]: ...
 
     @classmethod
     @abc.abstractmethod
     def create_from(
         cls, data: typing.Union[bytes, list[int]]
-    ) -> tuple["UECPCommand", int]:
-        ...
+    ) -> tuple["UECPCommand", int]: ...
 
     @classmethod
     def register_type(cls, message_type: type[T_UECPCommand]) -> type[T_UECPCommand]:

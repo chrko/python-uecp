@@ -194,9 +194,10 @@ class TestRadioText:
         with pytest.raises(UnicodeError), implicit_carriage_return_warnings:
             RadioText(text="\0")
 
-        with pytest.raises(
-            InvalidNumberOfTransmissions
-        ), implicit_carriage_return_warnings:
+        with (
+            pytest.raises(InvalidNumberOfTransmissions),
+            implicit_carriage_return_warnings,
+        ):
             RadioText(text="ABCDE", number_of_transmissions=0x10)
 
         with pytest.raises(ValueError, match="must not be empty"):
