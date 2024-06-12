@@ -90,10 +90,10 @@ class RequestCommand(UECPCommand):
         self,
         *,
         element_code: typing.Optional[int] = None,
-        command: typing.Union[UECPCommand, type[UECPCommand]] = None,
+        command: typing.Union[UECPCommand, type[UECPCommand], None] = None,
         data_set_number: typing.Optional[int] = None,
         programme_service_number: typing.Optional[int] = None,
-        additional_data: typing.Union[bytes, list[int]] = None,
+        additional_data: typing.Union[bytes, list[int], None] = None,
     ):
         if element_code is not None:
             if command is not None:

@@ -204,7 +204,7 @@ class IncrementalEncoder(codecs.IncrementalEncoder):
 
 
 class IncrementalDecoder(codecs.IncrementalDecoder):
-    def decode(self, data: bytes, final: bool = False) -> str:
+    def decode(self, data: bytes, final: bool = False) -> str:  # type: ignore[override]
         return decode(data, errors=self.errors)[0]
 
 

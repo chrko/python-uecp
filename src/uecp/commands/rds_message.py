@@ -530,7 +530,7 @@ class RadioTextSetCommand(UECPCommand, UECPCommandDSNnPSN):
         buffer_configuration=RadioTextBufferConfiguration.TRUNCATE_BEFORE,
         data_set_number=0,
         programme_service_number=0,
-        radiotext: RadioText = None,
+        radiotext: typing.Optional[RadioText] = None,
     ):
         super().__init__(
             data_set_number=data_set_number,
