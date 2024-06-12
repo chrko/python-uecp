@@ -21,9 +21,6 @@ jobs:
       - name: Install poetry
         run: |
           poetry install
-      - name: Show poetry debug information
-        run: |
-          poetry debug
       - name: Check formatting
         run: |
           poetry run black --diff --check .
@@ -37,6 +34,9 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         if: matrix.python-version == '3.11'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
       - name: Check static typing
         run: |
           poetry run mypy src
